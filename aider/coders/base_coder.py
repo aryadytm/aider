@@ -790,6 +790,8 @@ class Coder:
     def sync_files_from_aider_files_txt(self):
         aider_files_txt = os.path.join(self.root, '.aider.files.txt')
         if os.path.exists(aider_files_txt):
+            existing_files = set(self.abs_fnames) if self.abs_fnames else set()
+
             with open(aider_files_txt, 'r') as f:
                 file_list = [line.strip() for line in f if line.strip()]
 
@@ -805,6 +807,11 @@ class Coder:
                 self.abs_fnames = abs_file_list
             else:
                 self.abs_fnames.update(abs_file_list)
+
+            new_files = abs_file_list - existing_files
+            for new_file in new_files:
+                rel_path = os.path.relpath(new_file, self.root)
+                self.io.tool_output(f"New file added: {rel_path}")
 
             self.check_added_files()
 
