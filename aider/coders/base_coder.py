@@ -22,7 +22,7 @@ import git
 from rich.console import Console, Text
 from rich.markdown import Markdown
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEventHandler, FileModifiedEvent
 
 from aider import __version__, models, prompts, urls, utils
 from aider.commands import Commands
