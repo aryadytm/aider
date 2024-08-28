@@ -829,7 +829,7 @@ class Coder:
                 self.io.tool_output(f"\033[93m(aider.files.txt) + {rel_path}\033[0m")
             self.check_added_files()
 
-            if not self.first_launch:
+            if not self.first_launch and (removed_files or new_files):
                 print("\033[92m>\033[0m ", end="")
 
             self.first_launch = False
