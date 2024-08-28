@@ -21,6 +21,8 @@ from pathlib import Path
 import git
 from rich.console import Console, Text
 from rich.markdown import Markdown
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 from aider import __version__, models, prompts, urls, utils
 from aider.commands import Commands
@@ -91,6 +93,7 @@ class Coder:
     add_cache_headers = False
     cache_warming_thread = None
     num_cache_warming_pings = 0
+    file_observer = None
 
     @classmethod
     def create(
@@ -725,10 +728,16 @@ class Coder:
             return
 
     def get_input(self):
+        self.sync_files_from_aider_files_txt()
+
         inchat_files = self.get_inchat_relative_files()
-        read_only_files = [self.get_rel_fname(fname) for fname in self.abs_read_only_fnames]
+        read_only_files = [
+            self.get_rel_fname(fname) for fname in self.abs_read_only_fnames
+        ]
         all_files = sorted(set(inchat_files + read_only_files))
-        edit_format = "" if self.edit_format == self.main_model.edit_format else self.edit_format
+        edit_format = (
+            "" if self.edit_format == self.main_model.edit_format else self.edit_format
+        )
         return self.io.get_input(
             self.root,
             all_files,
@@ -737,6 +746,27 @@ class Coder:
             self.abs_read_only_fnames,
             edit_format=edit_format,
         )
+
+    def sync_files_from_aider_files_txt(self):
+        aider_files_txt = os.path.join(self.root, '.aider.files.txt')
+        if os.path.exists(aider_files_txt):
+            with open(aider_files_txt, 'r') as f:
+                file_list = [line.strip() for line in f if line.strip()]
+
+            abs_file_list = set()
+            for file in file_list:
+                abs_path = file if os.path.isabs(file) else os.path.abspath(os.path.join(self.root, file))
+                if os.path.exists(abs_path):
+                    abs_file_list.add(abs_path)
+                else:
+                    self.io.tool_error(f"File does not exist and will not be added: {abs_path}")
+
+            if self.abs_fnames is None:
+                self.abs_fnames = abs_file_list
+            else:
+                self.abs_fnames.update(abs_file_list)
+
+            self.check_added_files()
 
     def preproc_user_input(self, inp):
         if not inp:
