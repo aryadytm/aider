@@ -201,7 +201,7 @@ class Coder:
 
         # Model
         self.main_model.info["supports_assistant_prefill"] = True
-        
+
         main_model = self.main_model
         weak_model = main_model.weak_model
 
@@ -211,7 +211,6 @@ class Coder:
             prefix = "Model"
 
         output = f"{prefix}: {main_model.name} with {self.edit_format} edit format"
-
 
         if self.add_cache_headers or main_model.caches_by_default:
             output += ", prompt cache"
@@ -296,6 +295,7 @@ class Coder:
         cache_prompts=False,
         num_cache_warming_pings=0,
     ):
+        self.first_launch = True
         self.commit_before_message = []
         self.aider_commit_hashes = set()
         self.rejected_urls = set()
@@ -788,32 +788,51 @@ class Coder:
         )
 
     def sync_files_from_aider_files_txt(self):
-        aider_files_txt = os.path.join(self.root, '.aider.files.txt')
+        aider_files_txt = os.path.join(self.root, ".aider.files.txt")
         if os.path.exists(aider_files_txt):
             existing_files = set(self.abs_fnames) if self.abs_fnames else set()
 
-            with open(aider_files_txt, 'r') as f:
+            with open(aider_files_txt, "r") as f:
                 file_list = [line.strip() for line in f if line.strip()]
 
             abs_file_list = set()
             for file in file_list:
-                abs_path = file if os.path.isabs(file) else os.path.abspath(os.path.join(self.root, file))
+                abs_path = (
+                    file
+                    if os.path.isabs(file)
+                    else os.path.abspath(os.path.join(self.root, file))
+                )
                 if os.path.exists(abs_path):
                     abs_file_list.add(abs_path)
                 else:
-                    self.io.tool_error(f"File does not exist and will not be added: {abs_path}")
+                    self.io.tool_error(
+                        f"File does not exist and will not be added: {abs_path}"
+                    )
+
+            new_files = {f for f in abs_file_list - existing_files if os.path.exists(f)}
+            removed_files = {f for f in existing_files - abs_file_list if os.path.exists(f)}
 
             if self.abs_fnames is None:
                 self.abs_fnames = abs_file_list
             else:
-                self.abs_fnames.update(abs_file_list)
+                self.abs_fnames = (self.abs_fnames - removed_files) | new_files
 
-            new_files = abs_file_list - existing_files
+            if removed_files or new_files:
+                print("")
+
+            for removed_file in removed_files:
+                rel_path = os.path.relpath(removed_file, self.root)
+                self.io.tool_output(f"\033[38;5;208m(aider.files.txt) - {rel_path}\033[0m")
+
             for new_file in new_files:
                 rel_path = os.path.relpath(new_file, self.root)
-                self.io.tool_output(f"New file added: {rel_path}")
-
+                self.io.tool_output(f"\033[93m(aider.files.txt) + {rel_path}\033[0m")
             self.check_added_files()
+
+            if not self.first_launch:
+                print("\033[92m>\033[0m ", end="")
+
+            self.first_launch = False
 
     def preproc_user_input(self, inp):
         if not inp:

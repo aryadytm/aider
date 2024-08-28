@@ -306,6 +306,12 @@ def register_litellm_models(git_root, model_metadata_fname, io, verbose=False):
 
 
 def main(argv=None, input=None, output=None, force_git_root=None, return_coder=False):
+    print("\033[92m")  # ANSI escape code for green text
+    print("+---------------------------------------------------------------------+")
+    print("| YOU ARE USING SPECIAL VERSION OF AIDER THAT READS `aider.files.txt` |")
+    print("+---------------------------------------------------------------------+")
+    print("\033[0m")  # ANSI escape code to reset text color
+    
     if argv is None:
         argv = sys.argv[1:]
 
