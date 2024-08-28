@@ -182,6 +182,8 @@ class Coder:
         lines.append(f"Aider v{__version__}")
 
         # Model
+        self.main_model.info["supports_assistant_prefill"] = True
+        
         main_model = self.main_model
         weak_model = main_model.weak_model
 
@@ -191,10 +193,13 @@ class Coder:
             prefix = "Model"
 
         output = f"{prefix}: {main_model.name} with {self.edit_format} edit format"
+
+
         if self.add_cache_headers or main_model.caches_by_default:
             output += ", prompt cache"
         if main_model.info.get("supports_assistant_prefill"):
             output += ", infinite output"
+
         lines.append(output)
 
         if weak_model is not main_model:
