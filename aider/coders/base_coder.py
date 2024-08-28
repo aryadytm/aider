@@ -98,10 +98,31 @@ class Coder:
     file_observer = None
 
     class AiderFileHandler(FileSystemEventHandler):
+        """
+        A custom file system event handler that monitors changes to the .aider.files.txt file.
+        This handler is responsible for triggering the synchronization of files when the
+        .aider.files.txt file is modified.
+        """
+
         def __init__(self, coder):
+            """
+            Initialize the AiderFileHandler.
+
+            Args:
+                coder: The Coder instance that this handler is associated with.
+            """
             self.coder = coder
 
         def on_modified(self, event):
+            """
+            Handle the file modification event.
+
+            This method is called when a file modification is detected. If the modified
+            file is .aider.files.txt, it triggers the synchronization of files.
+
+            Args:
+                event: The file system event that triggered this handler.
+            """
             if event.src_path.endswith('.aider.files.txt'):
                 self.coder.sync_files_from_aider_files_txt()
 
