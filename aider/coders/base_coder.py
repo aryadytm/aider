@@ -23,6 +23,8 @@ from rich.console import Console, Text
 from rich.markdown import Markdown
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileModifiedEvent
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler, FileModifiedEvent
 
 from aider import __version__, models, prompts, urls, utils
 from aider.commands import Commands
@@ -93,6 +95,22 @@ class Coder:
     add_cache_headers = False
     cache_warming_thread = None
     num_cache_warming_pings = 0
+    file_observer = None
+
+    class AiderFileHandler(FileSystemEventHandler):
+        def __init__(self, coder):
+            self.coder = coder
+
+        def on_modified(self, event):
+            if event.src_path.endswith('.aider.files.txt'):
+                self.coder.sync_files_from_aider_files_txt()
+
+    def setup_file_watcher(self):
+        aider_files_txt = os.path.join(self.root, '.aider.files.txt')
+        event_handler = self.AiderFileHandler(self)
+        self.file_observer = Observer()
+        self.file_observer.schedule(event_handler, os.path.dirname(aider_files_txt), recursive=False)
+        self.file_observer.start()
     file_observer = None
 
     class AiderFileHandler(FileSystemEventHandler):
@@ -448,6 +466,8 @@ class Coder:
             if self.verbose:
                 self.io.tool_output("JSON Schema:")
                 self.io.tool_output(json.dumps(self.functions, indent=4))
+
+        self.setup_file_watcher()
 
     def setup_lint_cmds(self, lint_cmds):
         if not lint_cmds:
