@@ -1,7 +1,6 @@
 import difflib
 import math
 import re
-import subprocess
 import sys
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -36,24 +35,6 @@ class EditBlockCoder(Coder):
 
         return edits
 
-    def run_interactive_subprocess(self, command):
-        try:
-            result = subprocess.run(
-                command,
-                text=True,
-                shell=True,
-                encoding=self.io.encoding,
-                errors="replace",
-            )
-            if result.returncode == 0:
-                return
-            self.io.tool_error(f"Command '{command}' exited with status {result.returncode}")
-        except Exception as e:
-            self.io.tool_error(f"Error running command '{command}': {str(e)}")
-
-        self.io.tool_output(f"To retry and share output with the LLM: /run {command}")
-        self.io.tool_output("You can find this command in your input history with up-arrow.")
-
     def apply_edits(self, edits):
         failed = []
         passed = []
@@ -65,7 +46,6 @@ class EditBlockCoder(Coder):
             new_content = do_replace(full_path, content, original, updated, self.fence)
             if not new_content:
                 # try patching any of the other files in the chat
-                dump(self.abs_fnames)
                 for full_path in self.abs_fnames:
                     content = self.io.read_text(full_path)
                     new_content = do_replace(full_path, content, original, updated, self.fence)
@@ -462,7 +442,14 @@ def find_original_update_blocks(content, fence=DEFAULT_FENCE, valid_fnames=None)
         # Check for SEARCH/REPLACE blocks
         if line.strip() == HEAD:
             try:
-                filename = find_filename(lines[max(0, i - 3) : i], fence, valid_fnames)
+                # if next line after HEAD exists and is DIVIDER, it's a new file
+                if i + 1 < len(lines) and lines[i + 1].strip() == DIVIDER:
+                    filename = find_filename(lines[max(0, i - 3) : i], fence, None)
+                else:
+                    filename = find_filename(
+                        lines[max(0, i - 3) : i], fence, valid_fnames
+                    )
+
                 if not filename:
                     if current_filename:
                         filename = current_filename

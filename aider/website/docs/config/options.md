@@ -43,8 +43,9 @@ usage: aider [-h] [--openai-api-key] [--anthropic-api-key] [--model]
              [--llm-history-file] [--dark-mode] [--light-mode]
              [--pretty | --no-pretty] [--stream | --no-stream]
              [--user-input-color] [--tool-output-color]
-             [--tool-error-color] [--assistant-output-color]
-             [--code-theme] [--show-diffs] [--git | --no-git]
+             [--tool-error-color] [--tool-warning-color]
+             [--assistant-output-color] [--code-theme]
+             [--show-diffs] [--git | --no-git]
              [--gitignore | --no-gitignore] [--aiderignore]
              [--subtree-only] [--auto-commits | --no-auto-commits]
              [--dirty-commits | --no-dirty-commits]
@@ -58,9 +59,10 @@ usage: aider [-h] [--openai-api-key] [--anthropic-api-key] [--model]
              [--file] [--read] [--vim] [--voice-language]
              [--version] [--just-check-update]
              [--check-update | --no-check-update]
-             [--install-main-branch] [--apply] [--yes] [-v]
-             [--show-repo-map] [--show-prompts] [--exit] [--message]
-             [--message-file] [--encoding] [-c] [--gui]
+             [--install-main-branch] [--upgrade] [--apply] [--yes]
+             [-v] [--show-repo-map] [--show-prompts] [--exit]
+             [--message] [--message-file] [--encoding] [-c] [--gui]
+             [--suggest-shell-commands | --no-suggest-shell-commands]
 
 ```
 
@@ -287,9 +289,14 @@ Set the color for tool output (default: None)
 Environment variable: `AIDER_TOOL_OUTPUT_COLOR`  
 
 ### `--tool-error-color VALUE`
-Set the color for tool error messages (default: red)  
+Set the color for tool error messages (default: #FF2222)  
 Default: #FF2222  
 Environment variable: `AIDER_TOOL_ERROR_COLOR`  
+
+### `--tool-warning-color VALUE`
+Set the color for tool warning messages (default: #FFA500)  
+Default: #FFA500  
+Environment variable: `AIDER_TOOL_WARNING_COLOR`  
 
 ### `--assistant-output-color VALUE`
 Set the color for assistant output (default: #0088ff)  
@@ -478,6 +485,14 @@ Install the latest version from the main branch
 Default: False  
 Environment variable: `AIDER_INSTALL_MAIN_BRANCH`  
 
+### `--upgrade`
+Upgrade aider to the latest version from PyPI  
+Default: False  
+Environment variable: `AIDER_UPGRADE`  
+Aliases:
+  - `--upgrade`
+  - `--update`
+
 ### `--apply FILE`
 Apply the changes from the given file instead of running the chat (debug)  
 Environment variable: `AIDER_APPLY`  
@@ -542,4 +557,12 @@ Environment variable: `AIDER_GUI`
 Aliases:
   - `--gui`
   - `--browser`
+
+### `--suggest-shell-commands`
+Enable/disable suggesting shell commands (default: True)  
+Default: True  
+Environment variable: `AIDER_SUGGEST_SHELL_COMMANDS`  
+Aliases:
+  - `--suggest-shell-commands`
+  - `--no-suggest-shell-commands`
 <!--[[[end]]]-->

@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from aider.dump import dump  # noqa: F401
 from aider.io import AutoCompleter, ConfirmGroup, InputOutput
 from aider.utils import ChdirTemporaryDirectory
 
@@ -33,7 +34,9 @@ class TestInputOutput(unittest.TestCase):
 
             Path(fname).write_text("def hello(): pass\n")
             autocompleter = AutoCompleter(root, rel_fnames, addable_rel_fnames, commands, "utf-8")
-            self.assertEqual(autocompleter.words, set(rel_fnames + ["hello"]))
+            autocompleter.tokenize()
+            dump(autocompleter.words)
+            self.assertEqual(autocompleter.words, set(rel_fnames + [("hello", "`hello`")]))
 
             encoding = "utf-16"
             some_content_which_will_error_if_read_with_encoding_utf8 = "ÅÍÎÏ".encode(encoding)
@@ -158,6 +161,23 @@ class TestInputOutput(unittest.TestCase):
         self.assertTrue(result)
         mock_prompt.assert_called_once()
         mock_prompt.reset_mock()
+
+    def test_get_command_completions(self):
+        root = ""
+        rel_fnames = []
+        addable_rel_fnames = []
+        commands = MagicMock()
+        commands.get_commands.return_value = ["model", "chat", "help"]
+        commands.get_completions.return_value = ["gpt-3.5-turbo", "gpt-4"]
+        commands.matching_commands.return_value = (["/model", "/models"], None, None)
+
+        autocompleter = AutoCompleter(root, rel_fnames, addable_rel_fnames, commands, "utf-8")
+
+        # Test case for "/model gpt"
+        result = autocompleter.get_command_completions("/model gpt", ["/model", "gpt"])
+        self.assertEqual(result, ["gpt-3.5-turbo", "gpt-4"])
+        commands.get_completions.assert_called_once_with("/model")
+        commands.matching_commands.assert_called_once_with("/model")
 
 
 if __name__ == "__main__":

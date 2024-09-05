@@ -11,3 +11,4 @@ _site
 .jekyll-cache/
 .jekyll-metadata
 .env
+aider/__version__.py

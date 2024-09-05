@@ -18,7 +18,7 @@ and DeepSeek provides caching for Coder.
 
 ## Usage
 
-Run aider with `--prompt-caching` or add that setting to your 
+Run aider with `--cache-prompts` or add that setting to your 
 [configuration files](/docs/config.html).
 
 Due to limitations in the provider APIs, caching statistics and costs
@@ -36,7 +36,7 @@ Main model: claude-3-5-sonnet-20240620 with diff edit format, prompt cache, infi
 Aider can ping the provider to keep your prompt cache warm and prevent
 it from expiring.
 By default, Anthropic keeps your cache for 5 minutes.
-Use `--prompt-keepalive-pings N` to tell aider to ping
+Use `--cache-keepalive-pings N` to tell aider to ping
 every 5 minutes to keep the cache warm.
 Aider will ping up to `N` times over a period of `N*5` minutes
 after each message you send.

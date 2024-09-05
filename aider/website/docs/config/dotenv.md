@@ -192,8 +192,11 @@ cog.outl("```")
 ## Set the color for tool output (default: None)
 #AIDER_TOOL_OUTPUT_COLOR=
 
-## Set the color for tool error messages (default: red)
+## Set the color for tool error messages (default: #FF2222)
 #AIDER_TOOL_ERROR_COLOR=#FF2222
+
+## Set the color for tool warning messages (default: #FFA500)
+#AIDER_TOOL_WARNING_COLOR=#FFA500
 
 ## Set the color for assistant output (default: #0088ff)
 #AIDER_ASSISTANT_OUTPUT_COLOR=#0088ff
@@ -291,6 +294,9 @@ cog.outl("```")
 ## Install the latest version from the main branch
 #AIDER_INSTALL_MAIN_BRANCH=false
 
+## Upgrade aider to the latest version from PyPI
+#AIDER_UPGRADE=false
+
 ## Apply the changes from the given file instead of running the chat (debug)
 #AIDER_APPLY=
 
@@ -320,6 +326,9 @@ cog.outl("```")
 
 ## Run aider in your browser
 #AIDER_GUI=false
+
+## Enable/disable suggesting shell commands (default: True)
+#AIDER_SUGGEST_SHELL_COMMANDS=true
 ```
 <!--[[[end]]]-->
 

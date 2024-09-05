@@ -22,7 +22,7 @@ def default_env_file(git_root):
 
 def get_parser(default_config_files, git_root):
     parser = configargparse.ArgumentParser(
-        description="aider is GPT powered coding in your terminal",
+        description="aider is AI pair programming in your terminal",
         add_config_file_help=True,
         default_config_files=default_config_files,
         auto_env_var_prefix="AIDER_",
@@ -315,7 +315,12 @@ def get_parser(default_config_files, git_root):
     group.add_argument(
         "--tool-error-color",
         default="#FF2222",
-        help="Set the color for tool error messages (default: red)",
+        help="Set the color for tool error messages (default: #FF2222)",
+    )
+    group.add_argument(
+        "--tool-warning-color",
+        default="#FFA500",
+        help="Set the color for tool warning messages (default: #FFA500)",
     )
     group.add_argument(
         "--assistant-output-color",
@@ -510,6 +515,13 @@ def get_parser(default_config_files, git_root):
         default=False,
     )
     group.add_argument(
+        "--upgrade",
+        "--update",
+        action="store_true",
+        help="Upgrade aider to the latest version from PyPI",
+        default=False,
+    )
+    group.add_argument(
         "--apply",
         metavar="FILE",
         help="Apply the changes from the given file instead of running the chat (debug)",
@@ -584,6 +596,12 @@ def get_parser(default_config_files, git_root):
         action="store_true",
         help="Run aider in your browser",
         default=False,
+    )
+    group.add_argument(
+        "--suggest-shell-commands",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable/disable suggesting shell commands (default: True)",
     )
 
     return parser

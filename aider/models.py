@@ -9,6 +9,7 @@ from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Optional
 
+import json5
 import yaml
 from PIL import Image
 
@@ -120,7 +121,6 @@ MODEL_SETTINGS = [
         "udiff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         accepts_images=True,
         lazy=True,
         reminder="sys",
@@ -130,7 +130,6 @@ MODEL_SETTINGS = [
         "udiff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         accepts_images=True,
         lazy=True,
         reminder="sys",
@@ -140,7 +139,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         accepts_images=True,
         lazy=True,
         reminder="sys",
@@ -150,7 +148,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         accepts_images=True,
         lazy=True,
         reminder="sys",
@@ -160,7 +157,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         accepts_images=True,
         lazy=True,
         reminder="sys",
@@ -170,7 +166,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         accepts_images=True,
         lazy=True,
         reminder="sys",
@@ -196,7 +191,6 @@ MODEL_SETTINGS = [
         "udiff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         lazy=True,
         reminder="sys",
         examples_as_sys_msg=True,
@@ -206,7 +200,6 @@ MODEL_SETTINGS = [
         "udiff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         lazy=True,
         reminder="sys",
     ),
@@ -215,7 +208,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         accepts_images=True,
         reminder="sys",
     ),
@@ -224,7 +216,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         reminder="sys",
         examples_as_sys_msg=True,
     ),
@@ -233,7 +224,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         reminder="sys",
     ),
     ModelSettings(
@@ -241,7 +231,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         reminder="sys",
     ),
     # Claude
@@ -250,14 +239,12 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="claude-3-haiku-20240307",
         use_repo_map=True,
-        send_undo_reply=True,
     ),
     ModelSettings(
         "openrouter/anthropic/claude-3-opus",
         "diff",
         weak_model_name="openrouter/anthropic/claude-3-haiku",
         use_repo_map=True,
-        send_undo_reply=True,
     ),
     ModelSettings(
         "claude-3-sonnet-20240229",
@@ -340,7 +327,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="vertex_ai/claude-3-haiku@20240307",
         use_repo_map=True,
-        send_undo_reply=True,
     ),
     ModelSettings(
         "vertex_ai/claude-3-sonnet@20240229",
@@ -353,7 +339,6 @@ MODEL_SETTINGS = [
         "whole",
         weak_model_name="command-r-plus",
         use_repo_map=True,
-        send_undo_reply=True,
     ),
     # Groq llama3
     ModelSettings(
@@ -378,19 +363,27 @@ MODEL_SETTINGS = [
         "gemini/gemini-1.5-pro",
         "diff-fenced",
         use_repo_map=True,
-        send_undo_reply=True,
     ),
     ModelSettings(
         "gemini/gemini-1.5-pro-latest",
         "diff-fenced",
         use_repo_map=True,
-        send_undo_reply=True,
+    ),
+    ModelSettings(
+        "gemini/gemini-1.5-pro-exp-0827",
+        "diff-fenced",
+        use_repo_map=True,
+    ),
+    ModelSettings(
+        "gemini/gemini-1.5-flash-exp-0827",
+        "whole",
+        use_repo_map=False,
+        send_undo_reply=False,
     ),
     ModelSettings(
         "deepseek/deepseek-chat",
         "diff",
         use_repo_map=True,
-        send_undo_reply=True,
         examples_as_sys_msg=True,
         reminder="sys",
     ),
@@ -398,7 +391,6 @@ MODEL_SETTINGS = [
         "deepseek/deepseek-coder",
         "diff",
         use_repo_map=True,
-        send_undo_reply=True,
         examples_as_sys_msg=True,
         reminder="sys",
         caches_by_default=True,
@@ -407,7 +399,6 @@ MODEL_SETTINGS = [
         "openrouter/deepseek/deepseek-coder",
         "diff",
         use_repo_map=True,
-        send_undo_reply=True,
         examples_as_sys_msg=True,
         reminder="sys",
     ),
@@ -416,7 +407,6 @@ MODEL_SETTINGS = [
         "diff",
         weak_model_name="openrouter/openai/gpt-4o-mini",
         use_repo_map=True,
-        send_undo_reply=True,
         accepts_images=True,
         lazy=True,
         reminder="sys",
@@ -457,7 +447,9 @@ def get_model_info(model):
         if cache_age < 60 * 60 * 24:
             try:
                 content = json.loads(cache_file.read_text())
-                return get_model_flexible(model, content)
+                res = get_model_flexible(model, content)
+                if res:
+                    return res
             except Exception as ex:
                 print(str(ex))
 
@@ -468,7 +460,9 @@ def get_model_info(model):
             if response.status_code == 200:
                 content = response.json()
                 cache_file.write_text(json.dumps(content, indent=4))
-                return get_model_flexible(model, content)
+                res = get_model_flexible(model, content)
+                if res:
+                    return res
         except Exception as ex:
             print(str(ex))
 
@@ -595,7 +589,11 @@ class Model(ModelSettings):
         else:
             msgs = json.dumps(messages)
 
-        return len(self.tokenizer(msgs))
+        try:
+            return len(self.tokenizer(msgs))
+        except Exception as err:
+            print(f"Unable to count tokens: {err}")
+            return 0
 
     def token_count_for_image(self, fname):
         """
@@ -710,7 +708,7 @@ def register_litellm_models(model_fnames):
 
         try:
             with open(model_fname, "r") as model_def_file:
-                model_def = json.load(model_def_file)
+                model_def = json5.load(model_def_file)
             litellm._load_litellm()
             litellm.register_model(model_def)
         except Exception as e:
@@ -732,9 +730,11 @@ def validate_variables(vars):
 
 
 def sanity_check_models(io, main_model):
-    sanity_check_model(io, main_model)
+    problem_weak = None
+    problem_strong = sanity_check_model(io, main_model)
     if main_model.weak_model and main_model.weak_model is not main_model:
-        sanity_check_model(io, main_model.weak_model)
+        problem_weak = sanity_check_model(io, main_model.weak_model)
+    return problem_strong or problem_weak
 
 
 def sanity_check_model(io, model):
@@ -742,11 +742,11 @@ def sanity_check_model(io, model):
 
     if model.missing_keys:
         show = True
-        io.tool_error(f"Model {model}: Environment variables status:")
+        io.tool_warning(f"Warning: {model} expects these environment variables")
         for key in model.missing_keys:
             value = os.environ.get(key, "")
             status = "✓ Set" if value else "✗ Not set"
-            io.tool_error(f"- {key}: {status}")
+            io.tool_output(f"- {key}: {status}")
 
         if platform.system() == "Windows" or True:
             io.tool_output(
@@ -756,12 +756,12 @@ def sanity_check_model(io, model):
 
     elif not model.keys_in_environment:
         show = True
-        io.tool_output(f"Model {model}: Unknown which environment variables are required.")
+        io.tool_warning(f"Warning for {model}: Unknown which environment variables are required.")
 
     if not model.info:
         show = True
-        io.tool_output(
-            f"Model {model}: Unknown context window size and costs, using sane defaults."
+        io.tool_warning(
+            f"Warning for {model}: Unknown context window size and costs, using sane defaults."
         )
 
         possible_matches = fuzzy_match_models(model.name)
@@ -771,7 +771,9 @@ def sanity_check_model(io, model):
                 io.tool_output(f"- {match}")
 
     if show:
-        io.tool_output(f"For more info, see: {urls.model_warnings}\n")
+        io.tool_output(f"For more info, see: {urls.model_warnings}")
+
+    return show
 
 
 def fuzzy_match_models(name):

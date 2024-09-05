@@ -26,10 +26,14 @@ class TestMain(TestCase):
         self.tempdir_obj = IgnorantTemporaryDirectory()
         self.tempdir = self.tempdir_obj.name
         os.chdir(self.tempdir)
+        # Fake home directory prevents tests from using the real ~/.aider.conf.yml file:
+        self.homedir_obj = IgnorantTemporaryDirectory()
+        os.environ["HOME"] = self.homedir_obj.name
 
     def tearDown(self):
         os.chdir(self.original_cwd)
         self.tempdir_obj.cleanup()
+        self.homedir_obj.cleanup()
         os.environ.clear()
         os.environ.update(self.original_env)
 
@@ -586,16 +590,43 @@ class TestMain(TestCase):
             self.assertIsInstance(coder, Coder)
             self.assertEqual(coder.repo_map.map_mul_no_files, 5)
 
-    def test_apply_shell_commands(self):
+    def test_suggest_shell_commands_default(self):
         with GitTemporaryDirectory():
-            shell_md = Path("shell.md")
-            shell_md.write_text("```bash\ntouch file.txt\n```")
-
-            main(
-                ["--apply", "shell.md", "--yes"],
+            coder = main(
+                ["--exit", "--yes"],
                 input=DummyInput(),
                 output=DummyOutput(),
+                return_coder=True,
             )
+            self.assertTrue(coder.suggest_shell_commands)
 
-            # shell commands require explicit approval, not just --yes
-            self.assertFalse(Path("file.txt").exists())
+    def test_suggest_shell_commands_disabled(self):
+        with GitTemporaryDirectory():
+            coder = main(
+                ["--no-suggest-shell-commands", "--exit", "--yes"],
+                input=DummyInput(),
+                output=DummyOutput(),
+                return_coder=True,
+            )
+            self.assertFalse(coder.suggest_shell_commands)
+
+    def test_suggest_shell_commands_enabled(self):
+        with GitTemporaryDirectory():
+            coder = main(
+                ["--suggest-shell-commands", "--exit", "--yes"],
+                input=DummyInput(),
+                output=DummyOutput(),
+                return_coder=True,
+            )
+            self.assertTrue(coder.suggest_shell_commands)
+
+    @patch("git.Repo.init")
+    def test_main_exit_with_git_command_not_found(self, mock_git_init):
+        mock_git_init.side_effect = git.exc.GitCommandNotFound("git", "Command 'git' not found")
+
+        try:
+            result = main(["--exit", "--yes"], input=DummyInput(), output=DummyOutput())
+        except Exception as e:
+            self.fail(f"main() raised an unexpected exception: {e}")
+
+        self.assertIsNone(result, "main() should return None when called with --exit")

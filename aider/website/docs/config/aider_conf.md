@@ -21,6 +21,15 @@ load whichever is found first.
 
 {% include env-keys-tip.md %}
 
+## A note on lists
+
+The syntax for specifying a list of values is not standard yaml.
+Instead, use this format:
+
+```
+read: [CONVENTIONS.md, anotherfile.txt, thirdfile.py]
+```
+
 ## Sample YAML config file
 
 Below is a sample of the YAML config file, which you
@@ -185,8 +194,11 @@ cog.outl("```")
 ## Set the color for tool output (default: None)
 #tool-output-color:
 
-## Set the color for tool error messages (default: red)
+## Set the color for tool error messages (default: #FF2222)
 #tool-error-color: #FF2222
+
+## Set the color for tool warning messages (default: #FFA500)
+#tool-warning-color: #FFA500
 
 ## Set the color for assistant output (default: #0088ff)
 #assistant-output-color: #0088ff
@@ -287,6 +299,9 @@ cog.outl("```")
 ## Install the latest version from the main branch
 #install-main-branch: false
 
+## Upgrade aider to the latest version from PyPI
+#upgrade: false
+
 ## Apply the changes from the given file instead of running the chat (debug)
 #apply:
 
@@ -319,5 +334,8 @@ cog.outl("```")
 
 ## Run aider in your browser
 #gui: false
+
+## Enable/disable suggesting shell commands (default: True)
+#suggest-shell-commands: true
 ```
 <!--[[[end]]]-->
