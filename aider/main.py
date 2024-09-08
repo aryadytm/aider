@@ -321,12 +321,6 @@ def sanity_check_repo(repo, io):
 def main(argv=None, input=None, output=None, force_git_root=None, return_coder=False):
     from aider.extension_loader import ExtensionLoader
     
-    print("\033[92m")  # ANSI escape code for green text
-    print("+---------------------------------------------------------------------+")
-    print("| YOU ARE USING SPECIAL VERSION OF AIDER THAT READS `aider.files.txt` |")
-    print("+---------------------------------------------------------------------+")
-    print("\033[0m")  # ANSI escape code to reset text color
-    
     report_uncaught_exceptions()
 
     if argv is None:

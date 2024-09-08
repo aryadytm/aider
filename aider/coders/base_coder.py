@@ -17,7 +17,8 @@ from collections import defaultdict
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from pathlib import Path
-
+from io import StringIO
+from contextlib import contextmanager
 from rich.console import Console, Text
 from rich.markdown import Markdown
 from aider import __version__, models, prompts, urls, utils

@@ -5,6 +5,7 @@ from watchdog.events import FileSystemEventHandler
 
 AIDER_FILES_FILE = '.aider-files.txt'
 
+
 class AiderFileHandler(FileSystemEventHandler):
     def __init__(self, coder):
         self.coder = coder
@@ -45,7 +46,11 @@ class AiderFileHandler(FileSystemEventHandler):
             for new_file in new_files:
                 self.coder.run_one(f"/add {new_file}", preproc=True)
 
+            if new_files or removed_files:
+                pass
+
             self.coder.first_launch = False
+
 
 class FileWatcherExtension:
     def __init__(self, coder):
@@ -53,6 +58,11 @@ class FileWatcherExtension:
         self.file_observer = None
 
     def setup(self):
+        print("\033[92m")  # ANSI escape code for green text
+        print("+----------------------------------------------------------------------+")
+        print("| YOU ARE USING SPECIAL VERSION OF AIDER THAT READS `.aider-files.txt` |")
+        print("+----------------------------------------------------------------------+")
+        print("\033[0m")  # ANSI escape code to reset text color
         print("Coder Root:", self.coder.root)
         aider_files_txt = os.path.join(self.coder.root, AIDER_FILES_FILE)
         event_handler = AiderFileHandler(self.coder)
