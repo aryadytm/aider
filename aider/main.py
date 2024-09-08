@@ -319,6 +319,8 @@ def sanity_check_repo(repo, io):
 
 
 def main(argv=None, input=None, output=None, force_git_root=None, return_coder=False):
+    from aider.extension_loader import ExtensionLoader
+    
     print("\033[92m")  # ANSI escape code for green text
     print("+---------------------------------------------------------------------+")
     print("| YOU ARE USING SPECIAL VERSION OF AIDER THAT READS `aider.files.txt` |")
@@ -694,6 +696,9 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
     thread = threading.Thread(target=load_slow_imports)
     thread.daemon = True
     thread.start()
+    
+    extension_loader = ExtensionLoader(coder)
+    extension_loader.load_extensions()
 
     while True:
         try:
@@ -709,6 +714,8 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
 
             if switch.kwargs.get("show_announcements") is not False:
                 coder.show_announcements()
+        finally:
+            extension_loader.cleanup_extensions()
 
 
 def load_slow_imports():

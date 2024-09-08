@@ -20,11 +20,6 @@ from pathlib import Path
 
 from rich.console import Console, Text
 from rich.markdown import Markdown
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileModifiedEvent
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileModifiedEvent
-
 from aider import __version__, models, prompts, urls, utils
 from aider.commands import Commands
 from aider.history import ChatSummary
@@ -98,22 +93,6 @@ class Coder:
     file_observer = None
     suggest_shell_commands = True
     ignore_mentions = None
-    
-    class AiderFileHandler(FileSystemEventHandler):
-        def __init__(self, coder):
-            self.coder = coder
-
-        def on_modified(self, event):
-            if event.src_path.endswith('.aider.files.txt'):
-                self.coder.sync_files_from_aider_files_txt()
-
-    def setup_file_watcher(self):
-        aider_files_txt = os.path.join(self.root, '.aider.files.txt')
-        event_handler = self.AiderFileHandler(self)
-        self.file_observer = Observer()
-        self.file_observer.schedule(event_handler, os.path.dirname(aider_files_txt), recursive=False)
-        self.file_observer.start()
-
 
     @classmethod
     def create(
@@ -464,8 +443,6 @@ class Coder:
                 self.io.tool_output("JSON Schema:")
                 self.io.tool_output(json.dumps(self.functions, indent=4))
 
-        self.setup_file_watcher()
-
     def setup_lint_cmds(self, lint_cmds):
         if not lint_cmds:
             return
@@ -765,8 +742,6 @@ class Coder:
             return
 
     def get_input(self):
-        self.sync_files_from_aider_files_txt()
-
         inchat_files = self.get_inchat_relative_files()
         read_only_files = [
             self.get_rel_fname(fname) for fname in self.abs_read_only_fnames
@@ -783,53 +758,6 @@ class Coder:
             self.abs_read_only_fnames,
             edit_format=edit_format,
         )
-
-    def sync_files_from_aider_files_txt(self):
-        aider_files_txt = os.path.join(self.root, ".aider.files.txt")
-        if os.path.exists(aider_files_txt):
-            existing_files = set(self.abs_fnames) if self.abs_fnames else set()
-
-            with open(aider_files_txt, "r") as f:
-                file_list = [line.strip() for line in f if line.strip()]
-
-            abs_file_list = set()
-            for file in file_list:
-                abs_path = (
-                    file
-                    if os.path.isabs(file)
-                    else os.path.abspath(os.path.join(self.root, file))
-                )
-                if os.path.exists(abs_path):
-                    abs_file_list.add(abs_path)
-                else:
-                    self.io.tool_error(
-                        f"File does not exist and will not be added: {abs_path}"
-                    )
-
-            new_files = {f for f in abs_file_list - existing_files if os.path.exists(f)}
-            removed_files = {f for f in existing_files - abs_file_list if os.path.exists(f)}
-
-            if self.abs_fnames is None:
-                self.abs_fnames = abs_file_list
-            else:
-                self.abs_fnames = (self.abs_fnames - removed_files) | new_files
-
-            if removed_files or new_files:
-                print("")
-
-            for removed_file in removed_files:
-                rel_path = os.path.relpath(removed_file, self.root)
-                self.io.tool_output(f"\033[38;5;208m(aider.files.txt) - {rel_path}\033[0m")
-
-            for new_file in new_files:
-                rel_path = os.path.relpath(new_file, self.root)
-                self.io.tool_output(f"\033[93m(aider.files.txt) + {rel_path}\033[0m")
-            self.check_added_files()
-
-            if not self.first_launch and (removed_files or new_files):
-                print("\033[92m>\033[0m ", end="")
-
-            self.first_launch = False
 
     def preproc_user_input(self, inp):
         if not inp:
