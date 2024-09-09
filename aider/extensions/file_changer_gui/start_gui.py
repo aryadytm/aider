@@ -469,8 +469,8 @@ class AiderFileGUIApp(QMainWindow):
         # Reconnect the signal
         self.model.itemChanged.connect(self.on_item_changed)
 
-        # Update .aider-files.txt
-        self.update_aider_files_txt()
+        # Update .aider-files.json
+        self.update_aider_files_json()
 
     def check_children(self, item: QStandardItem, check_state: Qt.CheckState) -> None:
         for row in range(item.rowCount()):
@@ -612,7 +612,7 @@ class AiderFileGUIApp(QMainWindow):
 
     def select_all(self):
         self.set_check_state_recursive(self.model.invisibleRootItem(), Qt.Checked)
-        self.update_aider_files_txt()
+        self.update_aider_files_json()
 
     def unselect_all(self):
         self.set_check_state_recursive(self.model.invisibleRootItem(), Qt.Unchecked)
