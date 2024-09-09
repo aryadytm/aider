@@ -527,46 +527,38 @@ class AiderFileGUIApp(QMainWindow):
             root.appendRow(item)
 
     def show_context_menu(self, position):
-        indexes = self.tree_view.selectedIndexes()
-        if len(indexes) > 0:
-            level = 0
-            index = indexes[0]
-            while index.parent().isValid():
-                index = index.parent()
-                level += 1
-
-            menu = QMenu()
-            if level == 0:
-                action = menu.addAction("Add to Read-only")
-                action.triggered.connect(self.add_to_readonly)
+        index = self.tree_view.indexAt(position)
+        if index.isValid():
+            item = self.model.itemFromIndex(self.proxy_model.mapToSource(index))
+            file_path = item.data(Qt.UserRole)
+            
+            menu = QMenu(self)
+            add_action = menu.addAction("Add to Read-only")
+            add_action.triggered.connect(lambda: self.add_to_readonly(file_path))
             
             menu.exec_(self.tree_view.viewport().mapToGlobal(position))
 
     def show_readonly_context_menu(self, position):
-        indexes = self.readonly_tree_view.selectedIndexes()
-        if len(indexes) > 0:
-            menu = QMenu()
-            action = menu.addAction("Remove from Read-only")
-            action.triggered.connect(self.remove_from_readonly)
-            menu.exec_(self.readonly_tree_view.viewport().mapToGlobal(position))
-
-    def add_to_readonly(self):
-        indexes = self.tree_view.selectedIndexes()
-        for index in indexes:
-            item = self.model.itemFromIndex(self.proxy_model.mapToSource(index))
-            file_path = item.data(Qt.UserRole)
-            if file_path not in self.readonly_files:
-                self.readonly_files.add(file_path)
-        self.populate_readonly_tree(Path(self.dir_input.text()))
-
-    def remove_from_readonly(self):
-        indexes = self.readonly_tree_view.selectedIndexes()
-        for index in indexes:
+        index = self.readonly_tree_view.indexAt(position)
+        if index.isValid():
             item = self.readonly_model.itemFromIndex(self.readonly_proxy_model.mapToSource(index))
             file_path = item.text()
-            if file_path in self.readonly_files:
-                self.readonly_files.remove(file_path)
-        self.populate_readonly_tree(Path(self.dir_input.text()))
+            
+            menu = QMenu(self)
+            remove_action = menu.addAction("Remove from Read-only")
+            remove_action.triggered.connect(lambda: self.remove_from_readonly(file_path))
+            
+            menu.exec_(self.readonly_tree_view.viewport().mapToGlobal(position))
+
+    def add_to_readonly(self, file_path):
+        if file_path not in self.readonly_files:
+            self.readonly_files.add(file_path)
+            self.populate_readonly_tree(Path(self.dir_input.text()))
+
+    def remove_from_readonly(self, file_path):
+        if file_path in self.readonly_files:
+            self.readonly_files.remove(file_path)
+            self.populate_readonly_tree(Path(self.dir_input.text()))
 
     def count_all_files(self, parent: QStandardItem) -> int:
         count = 0
