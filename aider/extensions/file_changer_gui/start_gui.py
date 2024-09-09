@@ -112,6 +112,21 @@ class AiderFileGUIApp(QMainWindow):
         self.tree_view.setAlternatingRowColors(True)
         layout.addWidget(self.tree_view)
 
+        # Read-only files section
+        layout.addWidget(QLabel("Read-only Files:"))
+        
+        self.readonly_model = QStandardItemModel()
+        self.readonly_proxy_model = QSortFilterProxyModel()
+        self.readonly_proxy_model.setSourceModel(self.readonly_model)
+        self.readonly_proxy_model.setRecursiveFilteringEnabled(True)
+        self.readonly_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+
+        self.readonly_tree_view = QTreeView()
+        self.readonly_tree_view.setModel(self.readonly_proxy_model)
+        self.readonly_tree_view.setHeaderHidden(True)
+        self.readonly_tree_view.setAlternatingRowColors(True)
+        layout.addWidget(self.readonly_tree_view)
+
         # Search delay timer
         self.search_timer = QTimer()
         self.search_timer.setSingleShot(True)
@@ -256,6 +271,9 @@ class AiderFileGUIApp(QMainWindow):
         self.restore_checkbox_states(checkbox_states)
         self.restore_expansion_states(expansion_states)
         self.update_aider_files_txt()
+        
+        # Populate the read-only files tree
+        self.populate_readonly_tree(directory)
 
     def populate_tree(
         self, parent: QStandardItem, path: Path, formats: List[str]
@@ -471,6 +489,15 @@ class AiderFileGUIApp(QMainWindow):
             return
 
         checked_files = self.get_checked_files(self.model.invisibleRootItem())
+
+    def populate_readonly_tree(self, directory: Path) -> None:
+        self.readonly_model.clear()
+        root = self.readonly_model.invisibleRootItem()
+        # This is a placeholder. In the future, you'll implement logic to
+        # populate this tree with actual read-only files.
+        placeholder = QStandardItem("Read-only files will appear here")
+        placeholder.setEditable(False)
+        root.appendRow(placeholder)
         try:
             with open(self.aider_files_path, "w") as f:
                 if not checked_files:
