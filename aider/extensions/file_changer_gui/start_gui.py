@@ -19,12 +19,14 @@ from PyQt5.QtWidgets import (
     QAction,
     QMessageBox,
     QShortcut,
+    QMenu,
 )
 from PyQt5.QtGui import (
     QStandardItemModel,
     QStandardItem,
     QKeySequence,
     QFont,
+    QCursor,
 )
 from PyQt5.QtCore import Qt, QModelIndex, QSize, QTimer, QSortFilterProxyModel
 from pathlib import Path
@@ -61,6 +63,8 @@ class AiderFileGUIApp(QMainWindow):
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout()
         central_widget.setLayout(layout)
+
+        self.readonly_files = set()
 
         # Directory selection
         dir_layout = QHBoxLayout()
@@ -110,6 +114,8 @@ class AiderFileGUIApp(QMainWindow):
         self.tree_view.setModel(self.proxy_model)
         self.tree_view.setHeaderHidden(True)
         self.tree_view.setAlternatingRowColors(True)
+        self.tree_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree_view.customContextMenuRequested.connect(self.show_context_menu)
         layout.addWidget(self.tree_view)
 
         # Read-only files section
@@ -125,6 +131,8 @@ class AiderFileGUIApp(QMainWindow):
         self.readonly_tree_view.setModel(self.readonly_proxy_model)
         self.readonly_tree_view.setHeaderHidden(True)
         self.readonly_tree_view.setAlternatingRowColors(True)
+        self.readonly_tree_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.readonly_tree_view.customContextMenuRequested.connect(self.show_readonly_context_menu)
         layout.addWidget(self.readonly_tree_view)
 
         # Search delay timer
@@ -513,11 +521,52 @@ class AiderFileGUIApp(QMainWindow):
     def populate_readonly_tree(self, directory: Path) -> None:
         self.readonly_model.clear()
         root = self.readonly_model.invisibleRootItem()
-        # This is a placeholder. In the future, you'll implement logic to
-        # populate this tree with actual read-only files.
-        placeholder = QStandardItem("Read-only files will appear here")
-        placeholder.setEditable(False)
-        root.appendRow(placeholder)
+        for file_path in self.readonly_files:
+            item = QStandardItem(file_path)
+            item.setEditable(False)
+            root.appendRow(item)
+
+    def show_context_menu(self, position):
+        indexes = self.tree_view.selectedIndexes()
+        if len(indexes) > 0:
+            level = 0
+            index = indexes[0]
+            while index.parent().isValid():
+                index = index.parent()
+                level += 1
+
+            menu = QMenu()
+            if level == 0:
+                action = menu.addAction("Add to Read-only")
+                action.triggered.connect(self.add_to_readonly)
+            
+            menu.exec_(self.tree_view.viewport().mapToGlobal(position))
+
+    def show_readonly_context_menu(self, position):
+        indexes = self.readonly_tree_view.selectedIndexes()
+        if len(indexes) > 0:
+            menu = QMenu()
+            action = menu.addAction("Remove from Read-only")
+            action.triggered.connect(self.remove_from_readonly)
+            menu.exec_(self.readonly_tree_view.viewport().mapToGlobal(position))
+
+    def add_to_readonly(self):
+        indexes = self.tree_view.selectedIndexes()
+        for index in indexes:
+            item = self.model.itemFromIndex(self.proxy_model.mapToSource(index))
+            file_path = item.data(Qt.UserRole)
+            if file_path not in self.readonly_files:
+                self.readonly_files.add(file_path)
+        self.populate_readonly_tree(Path(self.dir_input.text()))
+
+    def remove_from_readonly(self):
+        indexes = self.readonly_tree_view.selectedIndexes()
+        for index in indexes:
+            item = self.readonly_model.itemFromIndex(self.readonly_proxy_model.mapToSource(index))
+            file_path = item.text()
+            if file_path in self.readonly_files:
+                self.readonly_files.remove(file_path)
+        self.populate_readonly_tree(Path(self.dir_input.text()))
 
     def count_all_files(self, parent: QStandardItem) -> int:
         count = 0
