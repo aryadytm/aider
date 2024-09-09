@@ -34,7 +34,7 @@ from pathlib import Path
 
 DEFAULT_DIRECTORY = os.getcwd()
 DEFAULT_FORMATS = "py,js,jsx,ts,tsx,swift,java,c,cs,cpp,md,kt,ktx"
-AIDER_FILES_NAME = ".aider-files.txt"
+AIDER_FILES_NAME = ".aider-files.json"
 
 
 def parse_arguments():
@@ -278,7 +278,7 @@ class AiderFileGUIApp(QMainWindow):
 
         self.restore_checkbox_states(checkbox_states)
         self.restore_expansion_states(expansion_states)
-        self.update_aider_files_txt()
+        self.update_aider_files_json()
         
         # Populate the read-only files tree
         self.populate_readonly_tree(directory)
@@ -492,23 +492,28 @@ class AiderFileGUIApp(QMainWindow):
             # This can happen on Windows if the paths are on different drives
             return str(abs_path)
 
-    def update_aider_files_txt(self) -> None:
+    def update_aider_files_json(self) -> None:
         if self.aider_files_path is None:
             return
 
         checked_files = self.get_checked_files(self.model.invisibleRootItem())
+        readonly_files = list(self.readonly_files)
         try:
+            data = []
+            if not checked_files and not readonly_files:
+                data = []
+            elif len(checked_files) == self.count_all_files(self.model.invisibleRootItem()):
+                data = [{"filename": "*", "is_read_only": False}]
+            else:
+                for file in checked_files:
+                    rel_path = self.get_relative_path(file)
+                    data.append({"filename": rel_path, "is_read_only": False})
+                for file in readonly_files:
+                    rel_path = self.get_relative_path(Path(file))
+                    data.append({"filename": rel_path, "is_read_only": True})
+
             with open(self.aider_files_path, "w") as f:
-                if not checked_files:
-                    f.write("")
-                elif len(checked_files) == self.count_all_files(
-                    self.model.invisibleRootItem()
-                ):
-                    f.write("*\n")
-                else:
-                    for file in checked_files:
-                        rel_path = self.get_relative_path(file)
-                        f.write(f"{rel_path}\n")
+                json.dump(data, f, indent=2)
         except IOError as e:
             QMessageBox.warning(
                 self, "Error", f"Failed to update {AIDER_FILES_NAME}: {str(e)}"
@@ -556,11 +561,13 @@ class AiderFileGUIApp(QMainWindow):
         if file_path not in self.readonly_files:
             self.readonly_files.add(file_path)
             self.populate_readonly_tree(Path(self.dir_input.text()))
+            self.update_aider_files_json()
 
     def remove_from_readonly(self, file_path):
         if file_path in self.readonly_files:
             self.readonly_files.remove(file_path)
             self.populate_readonly_tree(Path(self.dir_input.text()))
+            self.update_aider_files_json()
 
     def count_all_files(self, parent: QStandardItem) -> int:
         count = 0
@@ -620,3 +627,19 @@ if __name__ == "__main__":
     ex = AiderFileGUIApp(working_directory)
     ex.show()
     sys.exit(app.exec_())
+    def set_item_checked(self, filename: str, checked: bool):
+        item = self.find_item_by_filename(self.model.invisibleRootItem(), filename)
+        if item:
+            item.setCheckState(Qt.Checked if checked else Qt.Unchecked)
+
+    def find_item_by_filename(self, parent: QStandardItem, filename: str) -> Optional[QStandardItem]:
+        for row in range(parent.rowCount()):
+            item = parent.child(row)
+            item_path = self.get_relative_path(Path(item.data(Qt.UserRole)))
+            if item_path == filename:
+                return item
+            if item.hasChildren():
+                found_item = self.find_item_by_filename(item, filename)
+                if found_item:
+                    return found_item
+        return None
