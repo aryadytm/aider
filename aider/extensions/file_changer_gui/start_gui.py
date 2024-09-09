@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QShortcut,
     QMenu,
+    QCheckBox,
 )
 from PyQt5.QtGui import (
     QStandardItemModel,
@@ -513,7 +514,7 @@ class AiderFileGUIApp(QMainWindow):
             return
 
         checked_files = self.get_checked_files(self.model.invisibleRootItem())
-        readonly_files = list(self.readonly_files)
+        readonly_files = self.get_checked_readonly_files()
         try:
             data = []
             if not checked_files and not readonly_files:
@@ -539,6 +540,23 @@ class AiderFileGUIApp(QMainWindow):
                 self, "Error", f"An unexpected error occurred: {str(e)}"
             )
 
+    def get_checked_readonly_files(self):
+        checked_files = []
+        root = self.readonly_model.invisibleRootItem()
+        for row in range(root.rowCount()):
+            item = root.child(row)
+            self.get_checked_readonly_files_recursive(item, checked_files)
+        return checked_files
+
+    def get_checked_readonly_files_recursive(self, item, checked_files):
+        if item.isCheckable() and item.checkState() == Qt.Checked:
+            file_path = item.data(Qt.UserRole)
+            if file_path:
+                checked_files.append(file_path)
+        for row in range(item.rowCount()):
+            child = item.child(row)
+            self.get_checked_readonly_files_recursive(child, checked_files)
+
     def populate_readonly_tree(self, directory: Path) -> None:
         self.readonly_model.clear()
         root = self.readonly_model.invisibleRootItem()
@@ -551,10 +569,16 @@ class AiderFileGUIApp(QMainWindow):
                 if child is None:
                     child = QStandardItem(part)
                     child.setEditable(False)
+                    if i == len(path_parts) - 1:  # If it's a file
+                        child.setCheckable(True)
+                        child.setCheckState(Qt.Checked)
                     current_item.appendRow(child)
                 if i == len(path_parts) - 1:  # If it's a file
                     child.setData(file_path, Qt.UserRole)  # Store the full path as data
                 current_item = child
+        
+        # Connect the itemChanged signal to handle checkbox changes
+        self.readonly_model.itemChanged.connect(self.on_readonly_item_changed)
 
     def find_child(self, parent: QStandardItem, text: str) -> Optional[QStandardItem]:
         for row in range(parent.rowCount()):
@@ -619,6 +643,15 @@ class AiderFileGUIApp(QMainWindow):
         
         self.populate_readonly_tree(Path(self.dir_input.text()))
         self.update_aider_files_json()
+
+    def on_readonly_item_changed(self, item):
+        if item.isCheckable():
+            file_path = item.data(Qt.UserRole)
+            if item.checkState() == Qt.Checked:
+                self.readonly_files.add(file_path)
+            else:
+                self.readonly_files.discard(file_path)
+            self.update_aider_files_json()
 
     def count_all_files(self, parent: QStandardItem) -> int:
         count = 0
