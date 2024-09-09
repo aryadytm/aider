@@ -522,8 +522,10 @@ class AiderFileGUIApp(QMainWindow):
         self.readonly_model.clear()
         root = self.readonly_model.invisibleRootItem()
         for file_path in self.readonly_files:
-            item = QStandardItem(file_path)
+            relative_path = self.get_relative_path(Path(file_path))
+            item = QStandardItem(relative_path)
             item.setEditable(False)
+            item.setData(file_path, Qt.UserRole)  # Store the full path as data
             root.appendRow(item)
 
     def show_context_menu(self, position):
@@ -542,7 +544,7 @@ class AiderFileGUIApp(QMainWindow):
         index = self.readonly_tree_view.indexAt(position)
         if index.isValid():
             item = self.readonly_model.itemFromIndex(self.readonly_proxy_model.mapToSource(index))
-            file_path = item.text()
+            file_path = item.data(Qt.UserRole)
             
             menu = QMenu(self)
             remove_action = menu.addAction("Remove from Read-only")
