@@ -330,6 +330,8 @@ class AiderFileGUIApp(QMainWindow):
         item = QStandardItem(name)
         item.setCheckable(True)
         item.setData(str(path), Qt.UserRole)
+        if path.is_dir():
+            item.setData("folder", Qt.UserRole + 1)
         parent.appendRow(item)
         return item
 
@@ -343,10 +345,21 @@ class AiderFileGUIApp(QMainWindow):
         for row in range(parent.rowCount()):
             item = parent.child(row)
             if item.checkState() == Qt.Checked:
-                checked_files.append(Path(item.data(Qt.UserRole)))
-            if item.hasChildren():
+                path = Path(item.data(Qt.UserRole))
+                if item.data(Qt.UserRole + 1) == "folder":
+                    checked_files.extend(self.get_all_files_in_folder(path))
+                else:
+                    checked_files.append(path)
+            elif item.hasChildren() and item.checkState() == Qt.PartiallyChecked:
                 checked_files.extend(self.get_checked_files(item))
         return checked_files
+
+    def get_all_files_in_folder(self, folder_path: Path) -> List[Path]:
+        all_files = []
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                all_files.append(Path(os.path.join(root, file)))
+        return all_files
 
     def save_preset(self):
         if self.current_preset:
@@ -467,11 +480,22 @@ class AiderFileGUIApp(QMainWindow):
             self.check_children(item, check_state)
             self.check_parents(item.parent())
 
+            # If it's a folder, update its children
+            if item.data(Qt.UserRole + 1) == "folder":
+                self.update_folder_children(item, check_state)
+
         # Reconnect the signal
         self.model.itemChanged.connect(self.on_item_changed)
 
         # Update .aider-files.json
         self.update_aider_files_json()
+
+    def update_folder_children(self, folder_item: QStandardItem, check_state: Qt.CheckState):
+        for row in range(folder_item.rowCount()):
+            child = folder_item.child(row)
+            child.setCheckState(check_state)
+            if child.data(Qt.UserRole + 1) == "folder":
+                self.update_folder_children(child, check_state)
 
     def check_children(self, item: QStandardItem, check_state: Qt.CheckState) -> None:
         for row in range(item.rowCount()):
