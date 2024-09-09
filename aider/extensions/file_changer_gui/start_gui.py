@@ -489,15 +489,6 @@ class AiderFileGUIApp(QMainWindow):
             return
 
         checked_files = self.get_checked_files(self.model.invisibleRootItem())
-
-    def populate_readonly_tree(self, directory: Path) -> None:
-        self.readonly_model.clear()
-        root = self.readonly_model.invisibleRootItem()
-        # This is a placeholder. In the future, you'll implement logic to
-        # populate this tree with actual read-only files.
-        placeholder = QStandardItem("Read-only files will appear here")
-        placeholder.setEditable(False)
-        root.appendRow(placeholder)
         try:
             with open(self.aider_files_path, "w") as f:
                 if not checked_files:
@@ -518,6 +509,15 @@ class AiderFileGUIApp(QMainWindow):
             QMessageBox.warning(
                 self, "Error", f"An unexpected error occurred: {str(e)}"
             )
+
+    def populate_readonly_tree(self, directory: Path) -> None:
+        self.readonly_model.clear()
+        root = self.readonly_model.invisibleRootItem()
+        # This is a placeholder. In the future, you'll implement logic to
+        # populate this tree with actual read-only files.
+        placeholder = QStandardItem("Read-only files will appear here")
+        placeholder.setEditable(False)
+        root.appendRow(placeholder)
 
     def count_all_files(self, parent: QStandardItem) -> int:
         count = 0
