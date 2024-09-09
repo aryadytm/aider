@@ -607,10 +607,16 @@ class AiderFileGUIApp(QMainWindow):
         self.update_aider_files_json()
 
     def remove_from_readonly(self, file_path):
+        if file_path is None:
+            return
+        
         if os.path.isdir(file_path):
+            # Remove all files that start with this directory path
             self.readonly_files = {f for f in self.readonly_files if not f.startswith(file_path)}
-        elif file_path in self.readonly_files:
-            self.readonly_files.remove(file_path)
+        else:
+            # Remove the specific file if it exists in readonly_files
+            self.readonly_files.discard(file_path)
+        
         self.populate_readonly_tree(Path(self.dir_input.text()))
         self.update_aider_files_json()
 
