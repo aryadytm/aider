@@ -276,6 +276,22 @@ class AiderFileGUIApp(QMainWindow):
         root = self.model.invisibleRootItem()
         self.populate_tree(root, directory, formats)
 
+        # Read the JSON file and update the checkboxes and readonly files
+        if os.path.exists(self.aider_files_path):
+            with open(self.aider_files_path, 'r') as f:
+                data = json.load(f)
+            
+            for item in data:
+                filename = item['filename']
+                is_read_only = item.get('is_read_only', False)
+                
+                if filename == '*':
+                    self.select_all()
+                elif is_read_only:
+                    self.readonly_files.add(os.path.join(directory, filename))
+                else:
+                    self.set_item_checked(filename, True)
+
         self.restore_checkbox_states(checkbox_states)
         self.restore_expansion_states(expansion_states)
         self.update_aider_files_json()
