@@ -544,10 +544,24 @@ class AiderFileGUIApp(QMainWindow):
         root = self.readonly_model.invisibleRootItem()
         for file_path in self.readonly_files:
             relative_path = self.get_relative_path(Path(file_path))
-            item = QStandardItem(relative_path)
-            item.setEditable(False)
-            item.setData(file_path, Qt.UserRole)  # Store the full path as data
-            root.appendRow(item)
+            path_parts = relative_path.split(os.path.sep)
+            current_item = root
+            for i, part in enumerate(path_parts):
+                child = self.find_child(current_item, part)
+                if child is None:
+                    child = QStandardItem(part)
+                    child.setEditable(False)
+                    current_item.appendRow(child)
+                if i == len(path_parts) - 1:  # If it's a file
+                    child.setData(file_path, Qt.UserRole)  # Store the full path as data
+                current_item = child
+
+    def find_child(self, parent: QStandardItem, text: str) -> Optional[QStandardItem]:
+        for row in range(parent.rowCount()):
+            child = parent.child(row)
+            if child.text() == text:
+                return child
+        return None
 
     def show_context_menu(self, position):
         index = self.tree_view.indexAt(position)
@@ -556,8 +570,12 @@ class AiderFileGUIApp(QMainWindow):
             file_path = item.data(Qt.UserRole)
             
             menu = QMenu(self)
-            add_action = menu.addAction("Add to Read-only")
-            add_action.triggered.connect(lambda: self.add_to_readonly(file_path))
+            if item.hasChildren():
+                add_folder_action = menu.addAction("Add folder to Read-only")
+                add_folder_action.triggered.connect(lambda: self.add_folder_to_readonly(file_path))
+            else:
+                add_action = menu.addAction("Add to Read-only")
+                add_action.triggered.connect(lambda: self.add_to_readonly(file_path))
             
             menu.exec_(self.tree_view.viewport().mapToGlobal(position))
 
@@ -579,11 +597,22 @@ class AiderFileGUIApp(QMainWindow):
             self.populate_readonly_tree(Path(self.dir_input.text()))
             self.update_aider_files_json()
 
+    def add_folder_to_readonly(self, folder_path):
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                if file_path not in self.readonly_files:
+                    self.readonly_files.add(file_path)
+        self.populate_readonly_tree(Path(self.dir_input.text()))
+        self.update_aider_files_json()
+
     def remove_from_readonly(self, file_path):
-        if file_path in self.readonly_files:
+        if os.path.isdir(file_path):
+            self.readonly_files = {f for f in self.readonly_files if not f.startswith(file_path)}
+        elif file_path in self.readonly_files:
             self.readonly_files.remove(file_path)
-            self.populate_readonly_tree(Path(self.dir_input.text()))
-            self.update_aider_files_json()
+        self.populate_readonly_tree(Path(self.dir_input.text()))
+        self.update_aider_files_json()
 
     def count_all_files(self, parent: QStandardItem) -> int:
         count = 0
