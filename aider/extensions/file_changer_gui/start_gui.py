@@ -149,7 +149,7 @@ class AiderFileGUIApp(QMainWindow):
         splitter.addWidget(readonly_widget)
         
         # Set the sizes of the splitter to make the read-only section smaller
-        splitter.setSizes([700, 300])  # Adjust these values as needed
+        splitter.setSizes([800, 400])  # Adjust these values as needed
         
         # Add the splitter to the main layout
         layout.addWidget(splitter)
