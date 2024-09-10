@@ -654,10 +654,34 @@ class AiderFileGUIApp(QMainWindow):
             file_path = item.data(Qt.UserRole)
             
             menu = QMenu(self)
-            remove_action = menu.addAction("Remove from Read-only")
-            remove_action.triggered.connect(lambda: self.remove_from_readonly(file_path))
+            if item.hasChildren():
+                remove_action = menu.addAction("Remove folder from Read-only")
+                remove_action.triggered.connect(lambda: self.remove_folder_from_readonly(item))
+            else:
+                remove_action = menu.addAction("Remove from Read-only")
+                remove_action.triggered.connect(lambda: self.remove_from_readonly(file_path))
             
             menu.exec_(self.readonly_tree_view.viewport().mapToGlobal(position))
+
+    def remove_folder_from_readonly(self, folder_item):
+        folder_path = folder_item.data(Qt.UserRole)
+        if folder_path:
+            self.remove_from_readonly(folder_path)
+        else:
+            # If the folder_path is None, it means we're dealing with a virtual folder
+            # In this case, we need to remove all child items
+            self.remove_children_from_readonly(folder_item)
+        self.populate_readonly_tree(Path(self.dir_input.text()))
+        self.update_aider_files_json()
+
+    def remove_children_from_readonly(self, parent_item):
+        for row in range(parent_item.rowCount()):
+            child = parent_item.child(row)
+            file_path = child.data(Qt.UserRole)
+            if file_path:
+                self.readonly_files.discard(file_path)
+            else:
+                self.remove_children_from_readonly(child)
 
     def add_to_readonly(self, file_path):
         if file_path not in self.readonly_files:
