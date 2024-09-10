@@ -58,7 +58,7 @@ class AiderFileGUIApp(QMainWindow):
     def initUI(self) -> None:
         self.setWindowIconText("Aider File Selector")
         self.setWindowTitle("Aider File Selector")
-        self.setGeometry(300, 300, 450, 800)
+        self.setGeometry(300, 300, 300, 800)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -181,56 +181,59 @@ class AiderFileGUIApp(QMainWindow):
 
     def apply_dark_theme(self):
         # Apply QSS styling
+        chevron_right_path = os.path.join(os.path.dirname(__file__), 'images/chevron-right.png').replace("\\", "/")
+        chevron_down_path = os.path.join(os.path.dirname(__file__), 'images/chevron-down.png').replace("\\", "/")
+        
         self.setStyleSheet(
-            """
-            QMainWindow, QWidget {
+            f"""
+            QMainWindow, QWidget {{
                 background-color: #353535;
                 color: #ffffff;
-            }
-            QLineEdit, QTreeView {
+            }}
+            QLineEdit, QTreeView {{
                 background-color: #2b2b2b;
                 color: #ffffff;
                 padding: 5px;
                 border-radius: 3px;
-            }
-            QPushButton {
+            }}
+            QPushButton {{
                 background-color: #4a4a4a;
                 color: #ffffff;
                 padding: 5px;
                 border-radius: 3px;
-            }
-            QPushButton:hover {
+            }}
+            QPushButton:hover {{
                 background-color: #5a5a5a;
-            }
-            QTreeView {
+            }}
+            QTreeView {{
                 alternate-background-color: #323232;
-            }
+            }}
             QTreeView::branch:has-children:!has-siblings:closed,
-            QTreeView::branch:closed:has-children:has-siblings {
-                image: url(images/chevron-right.png);
+            QTreeView::branch:closed:has-children:has-siblings {{
+                image: url({chevron_right_path});
                 background-color: transparent;
-            }
+            }}
             QTreeView::branch:open:has-children:!has-siblings,
-            QTreeView::branch:open:has-children:has-siblings {
-                image: url(images/chevron-down.png);
+            QTreeView::branch:open:has-children:has-siblings {{
+                image: url({chevron_down_path});
                 background-color: transparent;
-            }
+            }}
             QTreeView::branch:has-children:!has-siblings:closed:hover,
             QTreeView::branch:closed:has-children:has-siblings:hover,
             QTreeView::branch:open:has-children:!has-siblings:hover,
-            QTreeView::branch:open:has-children:has-siblings:hover {
+            QTreeView::branch:open:has-children:has-siblings:hover {{
                 background-color: #6b6b6b55;
-            }
-            QMenuBar {
+            }}
+            QMenuBar {{
                 background-color: #2b2b2b;
                 color: #ffffff;
-            }
-            QMenuBar::item:selected {
+            }}
+            QMenuBar::item:selected {{
                 background-color: #5a5a5a;
-            }
-            QMenu::item:selected {
+            }}
+            QMenu::item:selected {{
                 background-color: #7b7b7b;
-            }
+            }}
         """
         )
 
