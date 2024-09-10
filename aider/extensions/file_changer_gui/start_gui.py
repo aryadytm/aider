@@ -119,8 +119,16 @@ class AiderFileGUIApp(QMainWindow):
         self.tree_view.customContextMenuRequested.connect(self.show_context_menu)
         layout.addWidget(self.tree_view)
 
-        # Read-only files section
-        layout.addWidget(QLabel("Read-only Files:"))
+        # Create a QSplitter
+        splitter = QSplitter(Qt.Vertical)
+        
+        # Add the main tree view to the splitter
+        splitter.addWidget(self.tree_view)
+        
+        # Create a widget for the read-only section
+        readonly_widget = QWidget()
+        readonly_layout = QVBoxLayout(readonly_widget)
+        readonly_layout.addWidget(QLabel("Read-only Files:"))
         
         self.readonly_model = QStandardItemModel()
         self.readonly_proxy_model = QSortFilterProxyModel()
@@ -134,7 +142,16 @@ class AiderFileGUIApp(QMainWindow):
         self.readonly_tree_view.setAlternatingRowColors(True)
         self.readonly_tree_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.readonly_tree_view.customContextMenuRequested.connect(self.show_readonly_context_menu)
-        layout.addWidget(self.readonly_tree_view)
+        readonly_layout.addWidget(self.readonly_tree_view)
+        
+        # Add the read-only widget to the splitter
+        splitter.addWidget(readonly_widget)
+        
+        # Set the sizes of the splitter to make the read-only section smaller
+        splitter.setSizes([700, 300])  # Adjust these values as needed
+        
+        # Add the splitter to the main layout
+        layout.addWidget(splitter)
 
         # Search delay timer
         self.search_timer = QTimer()
