@@ -760,7 +760,7 @@ class AiderFileGUIApp(QMainWindow):
 
     def unselect_all(self):
         self.set_check_state_recursive(self.model.invisibleRootItem(), Qt.Unchecked)
-        self.update_aider_files_txt()
+        self.update_aider_files_json()
 
     def set_check_state_recursive(self, parent: QStandardItem, state: Qt.CheckState):
         for row in range(parent.rowCount()):
