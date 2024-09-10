@@ -721,38 +721,38 @@ class AiderFileGUIApp(QMainWindow):
                 else:
                     self.readonly_files.discard(file_path)
             else:  # This is a folder
-                self.update_readonly_folder(item, item.checkState())
+                self.update_readonly_folder_children(item, item.checkState())
             
             # Update all parents
-            parent = item.parent()
-            while parent and parent != self.readonly_model.invisibleRootItem():
-                self.update_parent_check_state(parent)
-                parent = parent.parent()
+            self.update_parent_check_state(item.parent())
             
             self.update_aider_files_json()
 
-    def update_readonly_folder(self, folder_item, check_state):
-        for row in range(folder_item.rowCount()):
-            child = folder_item.child(row)
-            child.setCheckState(check_state)
-            file_path = child.data(Qt.UserRole)
-            if file_path:  # This is a file
-                if check_state == Qt.Checked:
-                    self.readonly_files.add(file_path)
-                else:
-                    self.readonly_files.discard(file_path)
-            else:  # This is a subfolder
-                self.update_readonly_folder(child, check_state)
+    def update_readonly_folder_children(self, folder_item, check_state):
+        if check_state != Qt.PartiallyChecked:
+            for row in range(folder_item.rowCount()):
+                child = folder_item.child(row)
+                child.setCheckState(check_state)
+                file_path = child.data(Qt.UserRole)
+                if file_path:  # This is a file
+                    if check_state == Qt.Checked:
+                        self.readonly_files.add(file_path)
+                    else:
+                        self.readonly_files.discard(file_path)
+                else:  # This is a subfolder
+                    self.update_readonly_folder_children(child, check_state)
 
     def update_parent_check_state(self, parent):
         if parent is None or parent == self.readonly_model.invisibleRootItem():
             return
 
         children_states = [parent.child(i).checkState() for i in range(parent.rowCount())]
-        if any(state == Qt.Checked for state in children_states):
+        if all(state == Qt.Checked for state in children_states):
             parent.setCheckState(Qt.Checked)
-        else:
+        elif all(state == Qt.Unchecked for state in children_states):
             parent.setCheckState(Qt.Unchecked)
+        else:
+            parent.setCheckState(Qt.PartiallyChecked)
 
         self.update_parent_check_state(parent.parent())
 
