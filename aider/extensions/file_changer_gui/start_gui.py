@@ -614,9 +614,8 @@ class AiderFileGUIApp(QMainWindow):
                 if child is None:
                     child = QStandardItem(part)
                     child.setEditable(False)
-                    if i == len(path_parts) - 1:  # If it's a file
-                        child.setCheckable(True)
-                        child.setCheckState(Qt.Checked)
+                    child.setCheckable(True)
+                    child.setCheckState(Qt.Checked)
                     current_item.appendRow(child)
                 if i == len(path_parts) - 1:  # If it's a file
                     child.setData(file_path, Qt.UserRole)  # Store the full path as data
@@ -692,11 +691,43 @@ class AiderFileGUIApp(QMainWindow):
     def on_readonly_item_changed(self, item):
         if item.isCheckable():
             file_path = item.data(Qt.UserRole)
-            if item.checkState() == Qt.Checked:
-                self.readonly_files.add(file_path)
-            else:
-                self.readonly_files.discard(file_path)
+            if file_path:  # This is a file
+                if item.checkState() == Qt.Checked:
+                    self.readonly_files.add(file_path)
+                else:
+                    self.readonly_files.discard(file_path)
+            else:  # This is a folder
+                self.update_readonly_folder(item, item.checkState())
+            
+            self.update_parent_check_state(item.parent())
             self.update_aider_files_json()
+
+    def update_readonly_folder(self, folder_item, check_state):
+        for row in range(folder_item.rowCount()):
+            child = folder_item.child(row)
+            child.setCheckState(check_state)
+            file_path = child.data(Qt.UserRole)
+            if file_path:  # This is a file
+                if check_state == Qt.Checked:
+                    self.readonly_files.add(file_path)
+                else:
+                    self.readonly_files.discard(file_path)
+            else:  # This is a subfolder
+                self.update_readonly_folder(child, check_state)
+
+    def update_parent_check_state(self, parent):
+        if parent is None or parent == self.readonly_model.invisibleRootItem():
+            return
+
+        children_states = [parent.child(i).checkState() for i in range(parent.rowCount())]
+        if all(state == Qt.Checked for state in children_states):
+            parent.setCheckState(Qt.Checked)
+        elif all(state == Qt.Unchecked for state in children_states):
+            parent.setCheckState(Qt.Unchecked)
+        else:
+            parent.setCheckState(Qt.PartiallyChecked)
+
+        self.update_parent_check_state(parent.parent())
 
     def count_all_files(self, parent: QStandardItem) -> int:
         count = 0
