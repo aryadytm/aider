@@ -723,7 +723,12 @@ class AiderFileGUIApp(QMainWindow):
             else:  # This is a folder
                 self.update_readonly_folder(item, item.checkState())
             
-            self.update_parent_check_state(item.parent())
+            # Update all parents
+            parent = item.parent()
+            while parent and parent != self.readonly_model.invisibleRootItem():
+                self.update_parent_check_state(parent)
+                parent = parent.parent()
+            
             self.update_aider_files_json()
 
     def update_readonly_folder(self, folder_item, check_state):
@@ -744,12 +749,10 @@ class AiderFileGUIApp(QMainWindow):
             return
 
         children_states = [parent.child(i).checkState() for i in range(parent.rowCount())]
-        if all(state == Qt.Checked for state in children_states):
+        if any(state == Qt.Checked for state in children_states):
             parent.setCheckState(Qt.Checked)
-        elif all(state == Qt.Unchecked for state in children_states):
-            parent.setCheckState(Qt.Unchecked)
         else:
-            parent.setCheckState(Qt.PartiallyChecked)
+            parent.setCheckState(Qt.Unchecked)
 
         self.update_parent_check_state(parent.parent())
 
