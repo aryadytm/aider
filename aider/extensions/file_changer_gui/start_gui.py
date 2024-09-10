@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
     QShortcut,
     QMenu,
     QCheckBox,
+    QSplitter,
 )
 from PyQt5.QtGui import (
     QStandardItemModel,
