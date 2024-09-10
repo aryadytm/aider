@@ -35,7 +35,7 @@ from pathlib import Path
 
 
 DEFAULT_DIRECTORY = os.getcwd()
-DEFAULT_FORMATS = "py,js,jsx,ts,tsx,swift,java,c,cs,cpp,md,kt,ktx"
+DEFAULT_FORMATS = "py,js,jsx,ts,tsx,swift,java,c,cs,cpp,md,mdx,kt,ktx,json,yaml,yml,env,txt,sh"
 AIDER_FILES_NAME = ".aider-files.json"
 
 
@@ -814,19 +814,3 @@ if __name__ == "__main__":
     ex = AiderFileGUIApp(working_directory)
     ex.show()
     sys.exit(app.exec_())
-    def set_item_checked(self, filename: str, checked: bool):
-        item = self.find_item_by_filename(self.model.invisibleRootItem(), filename)
-        if item:
-            item.setCheckState(Qt.Checked if checked else Qt.Unchecked)
-
-    def find_item_by_filename(self, parent: QStandardItem, filename: str) -> Optional[QStandardItem]:
-        for row in range(parent.rowCount()):
-            item = parent.child(row)
-            item_path = self.get_relative_path(Path(item.data(Qt.UserRole)))
-            if item_path == filename:
-                return item
-            if item.hasChildren():
-                found_item = self.find_item_by_filename(item, filename)
-                if found_item:
-                    return found_item
-        return None
