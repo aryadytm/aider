@@ -27,7 +27,7 @@ When responding to PlanSearch software engineering requests, you MUST ALWAYS fol
 </rules>
 
 <default_variables note="This can be overrided by using <variables/> tag.">
-n_observations = 20
+n_observations = 10
 ignore_xml_indents_in_response = false
 ignore_xml_indents_in_codeblocks = false
 </default_variables>
@@ -249,6 +249,9 @@ if __name__ == "__main__":
 
 conn.close()
 ```
+<variables>
+n_observations = 20
+</variables>
 
 .plansearch implement a new feature called Search. The user enters a /search [query] command. And then, return all tasks that contain the query
 </user_request>
