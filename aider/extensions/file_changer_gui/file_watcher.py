@@ -109,6 +109,10 @@ class FileWatcherExtension:
             self.file_observer.join()
 
 
+def apply_patch():
+    pass
+
+
 def setup_extension(coder):
     extension = FileWatcherExtension(coder)
     extension.setup()

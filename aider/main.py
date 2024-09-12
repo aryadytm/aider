@@ -319,7 +319,9 @@ def sanity_check_repo(repo, io):
 
 
 def main(argv=None, input=None, output=None, force_git_root=None, return_coder=False):
-    from aider.extension_loader import ExtensionLoader
+    from aider.extension_loader import ExtensionLoader, apply_patches
+    
+    apply_patches()
     
     report_uncaught_exceptions()
 
