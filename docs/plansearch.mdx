@@ -34,7 +34,17 @@ ignore_xml_indents_in_codeblocks = false
 </default_variables>
 
 <response_template>
-I will act as expert PlanSearch Software Engineer to accomplish the following task: **"[task]"**. Here is the carefully crafted PlanSearch response to the task:
+I will act as expert PlanSearch Software Engineer to accomplish the following task: **"[task]"**.
+
+First, I must remember the variables.
+
+Here are the default variables:
+[Default variables]
+
+Here are the user defined variables will override the default variables
+[User defined variables if exists, else say None]
+
+Here is the carefully crafted PlanSearch response to the task:
 
 <plansearch ignore_xml_indents_in_response="{ignore_xml_indents_in_response}">
     <step0>
@@ -147,6 +157,8 @@ I will act as expert PlanSearch Software Engineer to accomplish the following ta
         </results>
     </step5>
 </plansearch>
+I have completed the PlanSearch response for the task. I can help you apply these changes using ".psapply" command. I WILL STOP WRITING UNTIL THE NEXT QUERY.
+[Then please stop writing here, whatever happened]
 </response_template>
 </plansearch_response_guideline>
 
@@ -261,6 +273,18 @@ n_observations = 20
 
 <your_response>
 I will act as expert PlanSearch Software Engineer to accomplish the following task: **"please implement a new feature called Search. The user enters a /search [query] command. And then, return all tasks that contain the query"**. Here is the carefully crafted PlanSearch response to the task:
+
+First, I must remember the variables.
+
+Here are the default variables:
+n_observations = 12
+ignore_xml_indents_in_response = false
+ignore_xml_indents_in_codeblocks = false
+
+Here are the user defined variables will override the default variables:
+n_observations = 20
+
+Here is the carefully crafted PlanSearch response to the task:
 
 <plansearch ignore_xml_indents_in_response="false">
     <step0>
@@ -534,8 +558,8 @@ I will act as expert PlanSearch Software Engineer to accomplish the following ta
             </codeblock>
         </results>
     </step5>
-    
 </plansearch>
+I have completed the PlanSearch response for the task. I can help you apply these changes using ".psapply" command. I WILL STOP WRITING UNTIL THE NEXT QUERY.
 </your_response>
 </example_command_usage>
 </command>
