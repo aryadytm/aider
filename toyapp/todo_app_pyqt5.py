@@ -45,6 +45,15 @@ def remove_task_from_sorted_set(task_id):
 def get_task_order():
     return redis_client.zrange('task_order', 0, -1)
 
+def get_task_state_bit(task_id, state_bit):
+    task_data = get_task_from_redis(task_id)
+    return bool(int(task_data.get(f'state_{state_bit}', 0)))
+
+def set_task_state_bit(task_id, state_bit, value):
+    task_data = get_task_from_redis(task_id)
+    task_data[f'state_{state_bit}'] = int(value)
+    save_task_to_redis(task_id, task_data)
+
 
 class TodoApp(QWidget):
     def __init__(self):
