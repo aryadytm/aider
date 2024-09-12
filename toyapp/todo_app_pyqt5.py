@@ -14,20 +14,12 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
-# Redis connection constants
-REDIS_HOST = "game-jennet-47074.upstash.io"
-REDIS_PASSWORD = "AbfiAAIjcDFjZmI2NDBiOTgwY2M0NDE0ZDEzYmVjNWEzMHAxMA"
-REDIS_PORT = 6379
-REDIS_DB = 0
-
 # Create Redis client
 redis_client = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    password=REDIS_PASSWORD,
-    db=REDIS_DB,
-    decode_responses=True,
-    ssl=True
+    host="game-jennet-47074.upstash.io",
+    port=6379,
+    password="AbfiAAIjcDFjZmI2NDBiOTgwY2M0Njk4OWM0NDE0ZDEzYmVjNWEzMHAxMA",
+    ssl=True,
 )
 
 class TodoApp(QWidget):
