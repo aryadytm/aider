@@ -155,7 +155,7 @@ class TodoApp(QWidget):
         self.task_list.setItemWidget(item, checkbox)
 
     def closeEvent(self, event):
-        save_tasks_to_redis(self.get_all_tasks())
+        # No need to save tasks explicitly as they're saved in real-time
         super().closeEvent(event)
 
     def filter_tasks(self, state_bit, value):
