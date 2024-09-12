@@ -22,7 +22,13 @@ REDIS_PORT = 6379
 REDIS_DB = 0
 
 # Redis connection
-redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=REDIS_DB,
+    password=REDIS_PASSWORD,
+    ssl=True  # Enable SSL for secure connection
+)
 
 # Task state constants
 TASK_STATE_COMPLETED = 0
