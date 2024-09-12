@@ -16,7 +16,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 
 # Redis connection constants
-REDIS_HOST = 'localhost'
+REDIS_HOST = 'game-jennet-47074.upstash.io'
+REDIS_PASSWORD = "AbfiAAIjcDFjZmI2NDBiOTgwY2M0Njk4OWM0NDE0ZDEzYmVjNWEzMHAxMA"
 REDIS_PORT = 6379
 REDIS_DB = 0
 
