@@ -67,6 +67,7 @@ class TodoApp(QWidget):
         try:
             tasks = self.redis.hgetall(self.tasks_hash_key)
             for task_id, task_data in tasks.items():
+                task_data = task_data.decode('utf-8')
                 task_text, completed = task_data.split('|')
                 item = QListWidgetItem()
                 self.task_list.addItem(item)
@@ -104,6 +105,7 @@ class TodoApp(QWidget):
         try:
             task_data = self.redis.hget(self.tasks_hash_key, task_id)
             if task_data:
+                task_data = task_data.decode('utf-8')
                 task_text, _ = task_data.split('|')
                 self.redis.hset(self.tasks_hash_key, task_id, f"{task_text}|{state == 2}")
         except redis.RedisError as e:
@@ -113,6 +115,7 @@ class TodoApp(QWidget):
         try:
             tasks = self.redis.hgetall(self.tasks_hash_key)
             for task_id, task_data in tasks.items():
+                task_data = task_data.decode('utf-8')
                 _, completed = task_data.split('|')
                 if completed == 'True':
                     self.redis.hdel(self.tasks_hash_key, task_id)
