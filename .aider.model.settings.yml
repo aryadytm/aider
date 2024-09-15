@@ -2,13 +2,13 @@
   edit_format: "diff"
   weak_model_name: "openai/ghc-4o"
   use_repo_map: true
-  examples_as_sys_msg: false
+  examples_as_sys_msg: true
   max_tokens: 8192
   accepts_images: true
   extra_headers:
     anthropic-beta: max-tokens-3-5-sonnet-2024-07-15,prompt-caching-2024-07-31
   cache_control: true
-  reminder: null
+  reminder: user
 
 - name: "openai/ghc-4o"
   edit_format: "diff"
