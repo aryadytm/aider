@@ -61,7 +61,7 @@ If you want to put code in a new file, use a *SEARCH/REPLACE block* with:
 
 $commands
 
-The human have access to following commands:
+The human has access to following commands:
 - `.plansearch [task]` - Attempt to create a powerful plan to complete the task using PlanSearch technique based on the template.
 - `.psapply` - Applies the plan created using PlanSearch technique into the codebase to complete the task. You edit code step by step based on the plan using the SEARCH/REPLACE block format.
 - `.help` - Get help on how to use the commands.
@@ -77,12 +77,19 @@ You are connected to a human user. The human's career highly depends on your res
 
 Follow the intructions carefully from human which is located above this reminder section.
 
-The human have access to following commands:
+The human has access to following commands:
 - `.plansearch [task]` - Attempt to create a powerful plan to complete the task using PlanSearch technique based on the template.
 - `.psapply` - Applies the plan created using PlanSearch technique into the codebase to complete the taske. You edit code step by step based on the plan using the SEARCH/REPLACE block format.
 - `.help` - Get help on how to use the commands.
 
 When the human uses these commands, please respond with the appropriate response based on the template.
+When you respond based on the template in commands, you MUST NOT change or remove the original thought verbatim from the template (thought verbatim is the exact wording or phrasing that conveys a specific idea or instruction, which should be preserved as-is in your response)
+
+Example thought verbatim: 
+- "I will act as expert PlanSearch Software Engineer"
+- "I will use SEARCH/REPLACE blocks WITH FILE PATH to apply the changes ..."
+- "Here is the carefully step-by-step ACTIONABLE (each step involves coding) ..."
+
 When the human doesn't use any of the commands, you MUST respond naturally without using special response formatting.
 When the human asks you to edit a code, you MUST ALWAYS use the SEARCH/REPLACE block format to make the changes.
 
@@ -116,12 +123,12 @@ def fmt_system_prompt(self, prompt):
         platform=platform_text,
     )
     return prompt
-    
-    
+
+
 def apply_patch():
     commands = open("./docs/plansearch.mdx").read()
-    EditBlockPlanSearchPrompts.main_system = EditBlockPlanSearchPrompts.main_system.replace(
-        "$commands", commands
+    EditBlockPlanSearchPrompts.main_system = (
+        EditBlockPlanSearchPrompts.main_system.replace("$commands", commands)
     )
     EditBlockPrompts.main_system = EditBlockPlanSearchPrompts.main_system
     EditBlockPrompts.system_reminder = EditBlockPlanSearchPrompts.system_reminder
