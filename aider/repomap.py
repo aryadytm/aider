@@ -671,6 +671,7 @@ def get_supported_languages_md():
         repo_map = "✓" if Path(fn).exists() else ""
         linter_support = "✓"
         res += f"| {lang:20} | {ext:20} | {repo_map:^8} | {linter_support:^6} |\n"
+        print(f"{lang:20} {ext:20} {repo_map:^8} {linter_support:^6}")
 
     res += "\n"
 
