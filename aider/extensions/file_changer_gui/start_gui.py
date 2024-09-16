@@ -5,6 +5,7 @@ import signal
 import argparse
 from pathlib import Path
 from typing import List, Optional
+from os import path
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
@@ -37,6 +38,7 @@ from pathlib import Path
 
 DEFAULT_DIRECTORY = os.getcwd()
 DEFAULT_FORMATS = "py,js,jsx,ts,tsx,swift,java,c,cs,cpp,md,mdx,kt,ktx,json,yaml,yml,env,txt,sh,scm"
+DEFAULT_FORMATS = ','.join(fmt for fmt in DEFAULT_FORMATS.split(',') if fmt.strip())
 AIDER_FILES_NAME = ".aider-files.json"
 
 
@@ -299,8 +301,9 @@ class AiderFileGUIApp(QMainWindow):
         directory = Path(self.dir_input.text())
         self.aider_files_path = str(directory / AIDER_FILES_NAME)
         formats = [f.strip() for f in self.format_input.text().split(",") if f.strip()]
+        formats = [fmt for fmt in formats if fmt != ""]  # Ensure empty string is not included
         if not formats:
-            formats = [""]
+            formats = ["txt"]  # Default to txt if no valid formats are provided
         self.model.clear()
         root = self.model.invisibleRootItem()
         self.populate_tree(root, directory, formats)
@@ -338,7 +341,7 @@ class AiderFileGUIApp(QMainWindow):
             for item in path.iterdir():
                 if item.is_dir() and item.name.count(".") == 0:
                     folders.append(item)
-                elif any(item.name.endswith(f".{fmt}") for fmt in formats):
+                elif self.is_valid_file(item):
                     files.append(item)
         except PermissionError:
             print(f"Permission denied: {path}")
@@ -353,6 +356,9 @@ class AiderFileGUIApp(QMainWindow):
 
         for item in files:
             self.add_item(parent, item.name, item)
+
+        if not files and not folders:
+            print(f"Warning: No files with extensions found in {path}")
 
     def add_item(self, parent: QStandardItem, name: str, path: Path) -> QStandardItem:
         item = QStandardItem(name)
@@ -386,8 +392,21 @@ class AiderFileGUIApp(QMainWindow):
         all_files = []
         for root, _, files in os.walk(folder_path):
             for file in files:
-                all_files.append(Path(os.path.join(root, file)))
+                file_path = Path(os.path.join(root, file))
+                if self.is_valid_file(file_path):
+                    all_files.append(file_path)
         return all_files
+
+    def is_valid_file(self, file_path: Path) -> bool:
+        """
+        Check if a file is valid for inclusion in the file tree.
+        A file is considered valid if it has an extension and matches the specified formats.
+        
+        :param file_path: Path object representing the file
+        :return: True if the file is valid, False otherwise
+        """
+        _, extension = os.path.splitext(file_path)
+        return extension != '' and any(file_path.name.endswith(f".{fmt}") for fmt in self.format_input.text().split(","))
 
     def save_preset(self):
         if self.current_preset:
@@ -594,11 +613,14 @@ class AiderFileGUIApp(QMainWindow):
                 data = [{"filename": "*", "is_read_only": False}]
             else:
                 for file in checked_files:
-                    rel_path = self.get_relative_path(file)
-                    data.append({"filename": rel_path, "is_read_only": False})
+                    if self.is_valid_file(file):
+                        rel_path = self.get_relative_path(file)
+                        data.append({"filename": rel_path, "is_read_only": False})
                 for file in readonly_files:
-                    rel_path = self.get_relative_path(Path(file))
-                    data.append({"filename": rel_path, "is_read_only": True})
+                    file_path = Path(file)
+                    if self.is_valid_file(file_path):
+                        rel_path = self.get_relative_path(file_path)
+                        data.append({"filename": rel_path, "is_read_only": True})
 
             with open(self.aider_files_path, "w") as f:
                 json.dump(data, f, indent=2)
