@@ -36,7 +36,7 @@ from pathlib import Path
 
 
 DEFAULT_DIRECTORY = os.getcwd()
-DEFAULT_FORMATS = "py,js,jsx,ts,tsx,swift,java,c,cs,cpp,md,mdx,kt,ktx,json,yaml,yml,env,txt,sh"
+DEFAULT_FORMATS = "py,js,jsx,ts,tsx,swift,java,c,cs,cpp,md,mdx,kt,ktx,json,yaml,yml,env,txt,sh,scm"
 AIDER_FILES_NAME = ".aider-files.json"
 
 
@@ -823,6 +823,7 @@ class AiderFileGUIApp(QMainWindow):
                 self.set_check_state_recursive(item, state)
 
     def copy_selected_files_to_clipboard(self):
+        fence = "`" * 3
         selected_files = self.get_checked_files(self.model.invisibleRootItem())
         selected_files += self.get_checked_readonly_files()
         
@@ -835,7 +836,8 @@ class AiderFileGUIApp(QMainWindow):
             try:
                 with open(file_path, 'r', encoding='utf-8') as file:
                     content = file.read()
-                    formatted_content += f"{file_path}\n\"\"\"\n{content}\"\"\"\n\n"
+                    file_format = str(file_path).split('.')[-1]
+                    formatted_content += f"{file_path}\n{fence}{file_format}\n{content}\n{fence}\n\n"
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Error reading file {file_path}: {str(e)}")
                 return
@@ -843,7 +845,6 @@ class AiderFileGUIApp(QMainWindow):
         clipboard = QApplication.clipboard()
         try:
             clipboard.setText(formatted_content)
-            QMessageBox.information(self, "Success", "Selected file contents copied to clipboard.")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Error copying to clipboard: {str(e)}")
 
