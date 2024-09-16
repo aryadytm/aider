@@ -339,8 +339,9 @@ class AiderFileGUIApp(QMainWindow):
 
         try:
             for item in path.iterdir():
-                if item.is_dir() and item.name.count(".") == 0:
-                    folders.append(item)
+                if item.is_dir():
+                    if self.is_valid_directory(item) and not self.is_empty_folder(item):
+                        folders.append(item)
                 elif self.is_valid_file(item):
                     files.append(item)
         except PermissionError:
@@ -358,7 +359,7 @@ class AiderFileGUIApp(QMainWindow):
             self.add_item(parent, item.name, item)
 
         if not files and not folders:
-            print(f"Warning: No files with extensions found in {path}")
+            print(f"Warning: No valid files or non-empty folders found in {path}")
 
     def add_item(self, parent: QStandardItem, name: str, path: Path) -> QStandardItem:
         item = QStandardItem(name)
@@ -390,7 +391,8 @@ class AiderFileGUIApp(QMainWindow):
 
     def get_all_files_in_folder(self, folder_path: Path) -> List[Path]:
         all_files = []
-        for root, _, files in os.walk(folder_path):
+        for root, dirs, files in os.walk(folder_path):
+            dirs[:] = [d for d in dirs if self.is_valid_directory(Path(os.path.join(root, d)))]
             for file in files:
                 file_path = Path(os.path.join(root, file))
                 if self.is_valid_file(file_path):
@@ -400,13 +402,38 @@ class AiderFileGUIApp(QMainWindow):
     def is_valid_file(self, file_path: Path) -> bool:
         """
         Check if a file is valid for inclusion in the file tree.
-        A file is considered valid if it has an extension and matches the specified formats.
+        A file is considered valid if it has an extension, matches the specified formats,
+        and is not a .DS_Store file.
         
         :param file_path: Path object representing the file
         :return: True if the file is valid, False otherwise
         """
+        if file_path.name == '.DS_Store':
+            return False
         _, extension = os.path.splitext(file_path)
         return extension != '' and any(file_path.name.endswith(f".{fmt}") for fmt in self.format_input.text().split(","))
+
+    def is_valid_directory(self, dir_path: Path) -> bool:
+        """
+        Check if a directory should be included in the file tree.
+        Excludes __pycache__ directories.
+        
+        :param dir_path: Path object representing the directory
+        :return: True if the directory is valid, False otherwise
+        """
+        return dir_path.name != '__pycache__'
+
+    def is_empty_folder(self, folder_path: Path) -> bool:
+        """
+        Check if a folder is empty, excluding hidden files and __pycache__.
+        
+        :param folder_path: Path object representing the folder
+        :return: True if the folder is empty, False otherwise
+        """
+        for item in folder_path.iterdir():
+            if not item.name.startswith('.') and item.name != '__pycache__':
+                return False
+        return True
 
     def save_preset(self):
         if self.current_preset:
