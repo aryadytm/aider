@@ -428,6 +428,25 @@ class AiderFileGUIApp(QMainWindow):
             self.current_preset = filename
             QMessageBox.information(self, "Success", f"Preset loaded from {filename}")
 
+    def set_item_checked(self, filename: str, checked: bool):
+        item = self.find_item_by_filename(self.model.invisibleRootItem(), filename)
+        if item:
+            item.setCheckState(Qt.Checked if checked else Qt.Unchecked)
+
+    def find_item_by_filename(
+        self, parent: QStandardItem, filename: str
+    ) -> Optional[QStandardItem]:
+        for row in range(parent.rowCount()):
+            item = parent.child(row)
+            item_path = self.get_relative_path(Path(item.data(Qt.UserRole)))
+            if item_path == filename:
+                return item
+            if item.hasChildren():
+                found_item = self.find_item_by_filename(item, filename)
+                if found_item:
+                    return found_item
+        return None
+    
     def store_checkbox_states(self) -> dict:
         states = {}
         self.store_checkbox_states_recursive(self.model.invisibleRootItem(), states)
