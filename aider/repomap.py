@@ -45,6 +45,7 @@ class RepoMap:
         map_mul_no_files=8,
         refresh="auto",
     ):
+
         self.io = io
         self.verbose = verbose
         self.refresh = refresh
@@ -97,6 +98,7 @@ class RepoMap:
         mentioned_idents=None,
         force_refresh=False,
     ):
+
         if self.max_map_tokens <= 0:
             return
         if not other_files:
@@ -119,7 +121,6 @@ class RepoMap:
             target = 0
         if not chat_files and self.max_context_window and target > 0:
             max_map_tokens = target
-
         try:
             files_listing = self.get_ranked_tags_map(
                 chat_files,
@@ -129,6 +130,7 @@ class RepoMap:
                 mentioned_idents,
                 force_refresh,
             )
+
         except RecursionError:
             self.io.tool_error("Disabling repo map, git repo too large?")
             self.max_map_tokens = 0
@@ -200,7 +202,14 @@ class RepoMap:
         return data
 
     def get_tags_raw(self, fname, rel_fname):
+        print("get_tags_raw", fname, rel_fname)
         lang = filename_to_lang(fname)
+        
+        file_extension = os.path.splitext(fname)[1]
+        
+        if file_extension == ".swift":
+            lang = "swift"
+        
         if not lang:
             return
 
@@ -465,6 +474,8 @@ class RepoMap:
 
         # If not in cache or force_refresh is True, generate the map
         start_time = time.time()
+        
+        
         result = self.get_ranked_tags_map_uncached(
             chat_fnames, other_fnames, max_map_tokens, mentioned_fnames, mentioned_idents
         )
@@ -550,6 +561,7 @@ class RepoMap:
             middle = (lower_bound + upper_bound) // 2
 
         spin.end()
+        
         return best_tree
 
     tree_cache = dict()
@@ -627,7 +639,7 @@ class RepoMap:
 
         # truncate long lines, in case we get minified js or something else crazy
         output = "\n".join([line[:100] for line in output.splitlines()]) + "\n"
-
+        
         return output
 
 
@@ -664,6 +676,8 @@ def get_supported_languages_md():
 | Language | File extension | Repo map | Linter |
 |:--------:|:--------------:|:--------:|:------:|
 """
+    PARSERS[".swift"] = "swift"
+    
     data = sorted((lang, ex) for ex, lang in PARSERS.items())
 
     for lang, ext in data:

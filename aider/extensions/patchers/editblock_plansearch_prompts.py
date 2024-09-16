@@ -73,9 +73,9 @@ When the human asks you to edit a code, you MUST ALWAYS use the SEARCH/REPLACE b
 
     system_reminder = """
 <reminder>
-You are connected to a human user. The human's career highly depends on your response. The human may be fired if your responses contains mistakes, such as buggy or low quality code.
+Follow the intructions from human carefully which is located above this reminder section.
 
-Follow the intructions carefully from human which is located above this reminder section.
+You are connected to a human user. The human's career highly depends on your response. The human may be fired if your responses contains mistakes, such as buggy or low quality code.
 
 The human has access to following commands:
 - `.plansearch [task]` - Attempt to create a powerful plan to complete the task using PlanSearch technique based on the template.
