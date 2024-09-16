@@ -29,6 +29,7 @@ from PyQt5.QtGui import (
     QKeySequence,
     QFont,
     QCursor,
+    QClipboard,
 )
 from PyQt5.QtCore import Qt, QModelIndex, QSize, QTimer, QSortFilterProxyModel
 from pathlib import Path
@@ -181,6 +182,12 @@ class AiderFileGUIApp(QMainWindow):
         buttons_layout.addWidget(print_btn)
 
         layout.addLayout(buttons_layout)
+
+        # Copy to Clipboard button
+        copy_clipboard_btn = QPushButton("Copy to Clipboard")
+        copy_clipboard_btn.clicked.connect(self.copy_selected_files_to_clipboard)
+        copy_clipboard_btn.setProperty("class", "button")
+        layout.addWidget(copy_clipboard_btn)
 
         # Connect the itemChanged signal to our new method
         self.model.itemChanged.connect(self.on_item_changed)
@@ -815,6 +822,30 @@ class AiderFileGUIApp(QMainWindow):
             if item.hasChildren():
                 self.set_check_state_recursive(item, state)
 
+    def copy_selected_files_to_clipboard(self):
+        selected_files = self.get_checked_files(self.model.invisibleRootItem())
+        selected_files += self.get_checked_readonly_files()
+        
+        if not selected_files:
+            QMessageBox.warning(self, "No Files Selected", "Please select at least one file to copy.")
+            return
+        
+        formatted_content = ""
+        for file_path in selected_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    formatted_content += f"{file_path}\n\"\"\"\n{content}\"\"\"\n\n"
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Error reading file {file_path}: {str(e)}")
+                return
+        
+        clipboard = QApplication.clipboard()
+        try:
+            clipboard.setText(formatted_content)
+            QMessageBox.information(self, "Success", "Selected file contents copied to clipboard.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error copying to clipboard: {str(e)}")
 
 def signal_handler(signum, frame):
     sys.exit(0)
