@@ -22,7 +22,6 @@ def get_tags_raw_swift(self, fname, rel_fname):
     return handle_swift_file(fname, rel_fname, content)
 
 def apply_patch():
-    return
     original_get_tags_raw = RepoMap.get_tags_raw
 
     def patched_get_tags_raw(self, fname, rel_fname):
@@ -31,3 +30,13 @@ def apply_patch():
         return original_get_tags_raw(self, fname, rel_fname)
 
     RepoMap.get_tags_raw = patched_get_tags_raw
+
+    # Modify RepoMap.get_tags to bypass cache for Swift files
+    original_get_tags = RepoMap.get_tags
+
+    def patched_get_tags(self, fname, rel_fname):
+        if os.path.splitext(fname)[1].lower() == '.swift':
+            return self.get_tags_raw(fname, rel_fname)
+        return original_get_tags(self, fname, rel_fname)
+
+    RepoMap.get_tags = patched_get_tags
