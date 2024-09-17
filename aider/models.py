@@ -18,7 +18,7 @@ from aider.dump import dump  # noqa: F401
 from aider.llm import litellm
 
 DEFAULT_MODEL_NAME = "gpt-4o"
-ANTHROPIC_BETA_HEADER = "max-tokens-3-5-sonnet-2024-07-15,prompt-caching-2024-07-31"
+ANTHROPIC_BETA_HEADER = "prompt-caching-2024-07-31"
 
 OPENAI_MODELS = """
 gpt-4
@@ -77,6 +77,9 @@ class ModelSettings:
     max_tokens: Optional[int] = None
     cache_control: bool = False
     caches_by_default: bool = False
+    use_system_prompt: bool = True
+    use_temperature: bool = True
+    streaming: bool = True
 
 
 # https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo
@@ -306,10 +309,8 @@ MODEL_SETTINGS = [
         examples_as_sys_msg=True,
         accepts_images=True,
         max_tokens=8192,
-        extra_headers={
-            "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
-        },
         reminder="user",
+        cache_control=True,
     ),
     # Vertex AI Claude models
     # Does not yet support 8k token
@@ -320,6 +321,7 @@ MODEL_SETTINGS = [
         use_repo_map=True,
         examples_as_sys_msg=True,
         accepts_images=True,
+        max_tokens=8192,
         reminder="user",
     ),
     ModelSettings(
@@ -338,6 +340,19 @@ MODEL_SETTINGS = [
         "command-r-plus",
         "whole",
         weak_model_name="command-r-plus",
+        use_repo_map=True,
+    ),
+    # New Cohere models
+    ModelSettings(
+        "command-r-08-2024",
+        "whole",
+        weak_model_name="command-r-08-2024",
+        use_repo_map=True,
+    ),
+    ModelSettings(
+        "command-r-plus-08-2024",
+        "whole",
+        weak_model_name="command-r-plus-08-2024",
         use_repo_map=True,
     ),
     # Groq llama3
@@ -386,6 +401,7 @@ MODEL_SETTINGS = [
         use_repo_map=True,
         examples_as_sys_msg=True,
         reminder="sys",
+        max_tokens=8192,
     ),
     ModelSettings(
         "deepseek/deepseek-coder",
@@ -394,6 +410,7 @@ MODEL_SETTINGS = [
         examples_as_sys_msg=True,
         reminder="sys",
         caches_by_default=True,
+        max_tokens=8192,
     ),
     ModelSettings(
         "openrouter/deepseek/deepseek-coder",
@@ -410,6 +427,66 @@ MODEL_SETTINGS = [
         accepts_images=True,
         lazy=True,
         reminder="sys",
+    ),
+    ModelSettings(
+        "openai/o1-mini",
+        "whole",
+        weak_model_name="openai/gpt-4o-mini",
+        use_repo_map=True,
+        reminder="user",
+        use_system_prompt=False,
+        use_temperature=False,
+        streaming=False,
+    ),
+    ModelSettings(
+        "o1-mini",
+        "whole",
+        weak_model_name="gpt-4o-mini",
+        use_repo_map=True,
+        reminder="user",
+        use_system_prompt=False,
+        use_temperature=False,
+        streaming=False,
+    ),
+    ModelSettings(
+        "openai/o1-preview",
+        "diff",
+        weak_model_name="openai/gpt-4o-mini",
+        use_repo_map=True,
+        reminder="user",
+        use_system_prompt=False,
+        use_temperature=False,
+        streaming=False,
+    ),
+    ModelSettings(
+        "o1-preview",
+        "diff",
+        weak_model_name="gpt-4o-mini",
+        use_repo_map=True,
+        reminder="user",
+        use_system_prompt=False,
+        use_temperature=False,
+        streaming=False,
+    ),
+    ModelSettings(
+        "openrouter/openai/o1-mini",
+        "whole",
+        weak_model_name="openrouter/openai/gpt-4o-mini",
+        use_repo_map=True,
+        reminder="user",
+        use_system_prompt=False,
+        use_temperature=False,
+        streaming=False,
+    ),
+    ModelSettings(
+        "openrouter/openai/o1-preview",
+        "diff",
+        weak_model_name="openrouter/openai/gpt-4o-mini",
+        use_repo_map=True,
+        reminder="user",
+        use_system_prompt=False,
+        use_temperature=False,
+        streaming=False,
     ),
 ]
 

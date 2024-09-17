@@ -26,23 +26,6 @@ class Linter:
         )
         self.all_lint_cmd = None
 
-        self._check_eslint()
-
-    def _check_eslint(self):
-        eslint_names = ["eslint", "eslint.cmd", "eslint.exe"]
-        eslint_paths = [
-            Path(".") / "node_modules" / ".bin",
-            Path(self.root) / "node_modules" / ".bin" if self.root else None,
-        ]
-
-        for path in eslint_paths:
-            if path:
-                for name in eslint_names:
-                    eslint_file = path / name
-                    if eslint_file.is_file() and " " not in str(eslint_file):
-                        self.languages["typescript"] = f"{eslint_file} --format unix"
-                        return
-
     def set_linter(self, lang, cmd):
         if lang:
             self.languages[lang] = cmd
@@ -63,14 +46,18 @@ class Linter:
         cmd += " " + rel_fname
         cmd = cmd.split()
 
-        process = subprocess.Popen(
-            cmd,
-            cwd=self.root,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            encoding=self.encoding,
-            errors="replace",
-        )
+        try:
+            process = subprocess.Popen(
+                cmd,
+                cwd=self.root,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                encoding=self.encoding,
+                errors="replace",
+            )
+        except OSError as err:
+            print(f"Unable to execute lint command: {err}")
+            return
         stdout, _ = process.communicate()
         errors = stdout
         if process.returncode == 0:
@@ -222,7 +209,12 @@ def basic_lint(fname, code):
     if lang == "typescript":
         return
 
-    parser = get_parser(lang)
+    try:
+        parser = get_parser(lang)
+    except OSError as err:
+        print(f"Unable to load parser: {err}")
+        return
+
     tree = parser.parse(bytes(code, "utf-8"))
 
     errors = traverse_tree(tree.root_node)

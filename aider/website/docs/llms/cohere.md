@@ -18,8 +18,8 @@ python -m pip install aider-chat
 export COHERE_API_KEY=<key> # Mac/Linux
 setx   COHERE_API_KEY <key> # Windows, restart shell after setx
 
-aider --model command-r-plus
+aider --model command-r-plus-08-2024
 
 # List models available from Cohere
-aider --models cohere_chat/
+aider --list-models cohere_chat/
 ```
