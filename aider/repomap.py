@@ -202,13 +202,10 @@ class RepoMap:
         return data
 
     def get_tags_raw(self, fname, rel_fname):
-        print("get_tags_raw", fname, rel_fname)
+
         lang = filename_to_lang(fname)
         
         file_extension = os.path.splitext(fname)[1]
-        
-        if file_extension == ".swift":
-            lang = "swift"
         
         if not lang:
             return
@@ -676,7 +673,6 @@ def get_supported_languages_md():
 | Language | File extension | Repo map | Linter |
 |:--------:|:--------------:|:--------:|:------:|
 """
-    PARSERS[".swift"] = "swift"
     
     data = sorted((lang, ex) for ex, lang in PARSERS.items())
 
@@ -685,7 +681,6 @@ def get_supported_languages_md():
         repo_map = "✓" if Path(fn).exists() else ""
         linter_support = "✓"
         res += f"| {lang:20} | {ext:20} | {repo_map:^8} | {linter_support:^6} |\n"
-        print(f"{lang:20} {ext:20} {repo_map:^8} {linter_support:^6}")
 
     res += "\n"
 

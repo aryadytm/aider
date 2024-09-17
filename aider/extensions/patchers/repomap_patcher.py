@@ -43,10 +43,11 @@ def patched_get_ranked_tags_map_uncached(
         tree_str = ""
         
         for fname in all_fnames:
+            rel_path = fname.replace(self.root + "/", "")
             if is_swift_file(fname):
                 ast = convert_swift_file_to_ast(fname)
-                tree_str += f"{fname}:\n{ast}\n\n"
+                tree_str += f"{rel_path}:\n{ast}\n\n"
             else:
-                tree_str += f"{fname}\n\n"
+                tree_str += f"{rel_path}\n\n"
         
         return tree_str

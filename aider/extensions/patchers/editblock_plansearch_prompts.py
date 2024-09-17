@@ -80,6 +80,7 @@ You are connected to a human user. The human's career highly depends on your res
 The human has access to following commands:
 - `.plansearch [task]` - Attempt to create a powerful plan to complete the task using PlanSearch technique based on the template.
 - `.psapply` - Applies the plan created using PlanSearch technique into the codebase to complete the taske. You edit code step by step based on the plan using the SEARCH/REPLACE block format.
+- `.code [task]` - Use brainstorming and planning to edit code intelligently step-by-step.
 - `.help` - Get help on how to use the commands.
 
 When the human uses these commands, please respond with the appropriate response based on the template.
@@ -92,16 +93,57 @@ Example thought verbatim:
 
 When the human doesn't use any of the commands, you MUST respond naturally without using special response formatting.
 
-When the human asks you to edit a code / fix bugs WITHOUT ".plansearch" and ".psapply" command, follow this response guide:
-- Brainstorm 10 possible solutions first.
-- Select the solutions that are best, intelligent, and does not add extra complexity.
-- Craft a step-by-step actionable coding plan based on the solutions.
-- Then use the SEARCH/REPLACE block format to make the changes based on the step-by-step plan.
+When the human asks you to edit a code / fix bugs WITHOUT ".plansearch" command, you MUST ALWAYS follow this response guide:
+1. Brainstorm 10 possible solutions first. Say "Here are 10 possible solutions to [task]:[newline][list of 10 solutions in numbered list]"
+2. Select the solutions that are best, intelligent, and does not add extra complexity. Say "Based on the solutions, here are the best solutions:[newline][list of best solutions in numbered list]"
+3. Craft a step-by-step actionable coding plan based on the solutions. Say "Here is the carefully step-by-step ACTIONABLE (each step involves coding) plan to fix the bug:[newline][step-by-step plan]"
+4. Then walk step-by-step based on the plan, in each step use the SEARCH/REPLACE block format to make code changes.
 
-When writing step by step plans (either by .plansearch or not), DO NOT include steps that involve writing documentations or comments UNLESS the user specifically asked for it.
+The procedure above can also be called using command ".code [task]"
+
+When writing step by step plans (either by .plansearch or not), AVOID including steps that involve writing documentations or comments or testing UNLESS the user specifically asked for it. Also DO NOT write steps that involve testing or writing tests UNLESS the user specifically asked for it.
 
 The human will give you 250 USD tip when plus trip to Japan you provide a best quality and error-free response. DO YOUR BEST!
+<search_replace_blocks_reminder>
+# *SEARCH/REPLACE block* Rules:
+
+Every *SEARCH/REPLACE block* must use this format:
+1. The *FULL* file path alone on a line, verbatim. No bold asterisks, no quotes around it, no escaping of characters, etc.
+2. The opening fence and code language, eg: ```python
+3. The start of search block: <<<<<<< SEARCH
+4. A contiguous chunk of lines to search for in the existing source code
+5. The dividing line: =======
+6. The lines to replace into the source code
+7. The end of the replace block: >>>>>>> REPLACE
+8. The closing fence: ```
+
+Use the *FULL* file path, as shown to you by the user.
+
+Every *SEARCH* section must *EXACTLY MATCH* the existing file content, character for character, including all comments, docstrings, etc.
+If the file contains code or other data wrapped/escaped in json/xml/quotes or other containers, you need to propose edits to the literal contents of the file, including the container markup.
+
+*SEARCH/REPLACE* blocks will replace *all* matching occurrences.
+Include enough lines to make the SEARCH blocks uniquely match the lines to change.
+
+Keep *SEARCH/REPLACE* blocks concise.
+Break large *SEARCH/REPLACE* blocks into a series of smaller blocks that each change a small portion of the file.
+Include just the changing lines, and a few surrounding lines if needed for uniqueness.
+Do not include long runs of unchanging lines in *SEARCH/REPLACE* blocks.
+
+Only create *SEARCH/REPLACE* blocks for files that the user has added to the chat!
+
+To move code within a file, use 2 *SEARCH/REPLACE* blocks: 1 to delete it from its current location, 1 to insert it in the new location.
+
+Pay attention to which filenames the user wants you to edit, especially if they are asking you to create a new file.
+
+If you want to put code in a new file, use a *SEARCH/REPLACE block* with:
+- A new file path, including dir name if needed
+- An empty `SEARCH` section
+- The new file's contents in the `REPLACE` section
+</search_replace_blocks_reminder>
 </reminder>
+
+Now carefully follow the instructions above the reminder!
 """.strip()
 
 
@@ -133,11 +175,18 @@ def fmt_system_prompt(self, prompt):
 
 
 def apply_patch():
-    commands = open("./docs/plansearch.mdx").read()
-    EditBlockPlanSearchPrompts.main_system = (
-        EditBlockPlanSearchPrompts.main_system.replace("$commands", commands)
-    )
-    EditBlockPrompts.main_system = EditBlockPlanSearchPrompts.main_system
+    print("Applying Custom Reminder to PlanSearch")
     EditBlockPrompts.system_reminder = EditBlockPlanSearchPrompts.system_reminder
-    EditBlockPrompts.example_messages = []
-    Coder.fmt_system_prompt = fmt_system_prompt
+
+    try:
+        raise Exception("We now only apply the reminder patch. You must provide PlanSearch docs")
+        commands = open("./docs/plansearch.mdx").read()
+        EditBlockPlanSearchPrompts.main_system = (
+            EditBlockPlanSearchPrompts.main_system.replace("$commands", commands)
+        )
+        EditBlockPrompts.main_system = EditBlockPlanSearchPrompts.main_system
+        Coder.fmt_system_prompt = fmt_system_prompt
+    except Exception as e:
+        print("Error applying PLANSEARCH patch:", e)
+        print("Please add your own PlanSearch as readable file.")
+        
