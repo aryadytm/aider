@@ -22,6 +22,7 @@ def get_tags_raw_swift(self, fname, rel_fname):
     return handle_swift_file(fname, rel_fname, content)
 
 def apply_patch():
+    return
     original_get_tags_raw = RepoMap.get_tags_raw
 
     def patched_get_tags_raw(self, fname, rel_fname):
