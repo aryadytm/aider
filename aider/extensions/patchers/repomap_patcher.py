@@ -2,12 +2,13 @@ from aider.extensions.patchers.swift_ast.swift_ast_tools import convert_swift_to
 from aider.repomap import RepoMap
 import os
 
+MINIMUM_SWIFT_FILES = 3
 
 def is_swift_file(filename):
     return filename.lower().endswith('.swift')
 
 def has_swift_files(file_list):
-    return any(is_swift_file(fname) for fname in file_list)
+    return sum(1 for fname in file_list if is_swift_file(fname)) >= MINIMUM_SWIFT_FILES
 
 def convert_swift_file_to_ast(file_path):
     with open(file_path, 'r') as file:
