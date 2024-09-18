@@ -299,6 +299,7 @@ class AiderFileGUIApp(QMainWindow):
         expansion_states = self.store_expansion_states()
 
         directory = Path(self.dir_input.text())
+        self.current_expansion_states = expansion_states  # Store expansion states
         self.aider_files_path = str(directory / AIDER_FILES_NAME)
         formats = [f.strip() for f in self.format_input.text().split(",") if f.strip()]
         formats = [fmt for fmt in formats if fmt != ""]  # Ensure empty string is not included
@@ -325,7 +326,8 @@ class AiderFileGUIApp(QMainWindow):
                     self.set_item_checked(filename, True)
 
         self.restore_checkbox_states(checkbox_states)
-        self.restore_expansion_states(expansion_states)
+        if hasattr(self, 'current_expansion_states'):
+            self.restore_expansion_states(self.current_expansion_states)
         self.update_aider_files_json()
         
         # Populate the read-only files tree
@@ -532,37 +534,37 @@ class AiderFileGUIApp(QMainWindow):
     def store_expansion_states(self) -> dict:
         states = {}
         self.store_expansion_states_recursive(
-            self.model.invisibleRootItem(), self.tree_view.rootIndex(), states
+            self.model.invisibleRootItem(), self.tree_view.rootIndex(), states, ""
         )
         return states
 
     def store_expansion_states_recursive(
-        self, parent: QStandardItem, parent_index: QModelIndex, states: dict
+        self, parent: QStandardItem, parent_index: QModelIndex, states: dict, current_path: str
     ) -> None:
         for row in range(parent.rowCount()):
             child_index = self.model.index(row, 0, parent_index)
             item = self.model.itemFromIndex(child_index)
-            path = item.data(Qt.UserRole)
+            path = os.path.join(current_path, item.text())
             states[path] = self.tree_view.isExpanded(child_index)
             if item.hasChildren():
-                self.store_expansion_states_recursive(item, child_index, states)
+                self.store_expansion_states_recursive(item, child_index, states, path)
 
     def restore_expansion_states(self, states: dict) -> None:
         self.restore_expansion_states_recursive(
-            self.model.invisibleRootItem(), self.tree_view.rootIndex(), states
+            self.model.invisibleRootItem(), self.tree_view.rootIndex(), states, ""
         )
 
     def restore_expansion_states_recursive(
-        self, parent: QStandardItem, parent_index: QModelIndex, states: dict
+        self, parent: QStandardItem, parent_index: QModelIndex, states: dict, current_path: str
     ) -> None:
         for row in range(parent.rowCount()):
             child_index = self.model.index(row, 0, parent_index)
             item = self.model.itemFromIndex(child_index)
-            path = item.data(Qt.UserRole)
+            path = os.path.join(current_path, item.text())
             if path in states:
                 self.tree_view.setExpanded(child_index, states[path])
             if item.hasChildren():
-                self.restore_expansion_states_recursive(item, child_index, states)
+                self.restore_expansion_states_recursive(item, child_index, states, path)
 
     def on_item_changed(self, item: QStandardItem) -> None:
         # Disconnect the signal temporarily to avoid recursive calls
