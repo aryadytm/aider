@@ -511,7 +511,7 @@ class Coder:
             break
 
         if good:
-            self.fence = (fence_open, fence_close)
+            self.fence = (all_fences[0][0], all_fences[0][1])
         else:
             self.fence = self.fences[0]
             self.io.tool_warning(
@@ -1509,7 +1509,7 @@ class Coder:
             except AttributeError:
                 text = None
 
-            if self.show_pretty():
+            if True:
                 self.live_incremental_response(False)
             elif text:
                 try:
