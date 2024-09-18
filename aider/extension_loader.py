@@ -9,6 +9,7 @@ class ExtensionLoader:
         self.extensions = []
 
     def load_extensions(self) -> None:
+        # return
         print("\033[94mLoading extensions...")
         
         extensions_dir = os.path.join(os.path.dirname(__file__), 'extensions')
@@ -50,6 +51,7 @@ class ExtensionLoader:
 
 # Apply patches
 def apply_patches():
+    # return
     print("\033[94mApplying patches...\033[0m")
     
     extensions_dir = os.path.join(os.path.dirname(__file__), 'extensions')

@@ -15,7 +15,7 @@ def convert_swift_file_to_ast(file_path):
         content = file.read()
     return convert_swift_to_ast(content)
 
-def apply_patch():    
+def apply_patch():
     RepoMap.original_get_ranked_tags_map_uncached = RepoMap.get_ranked_tags_map_uncached
     RepoMap.get_ranked_tags_map_uncached = patched_get_ranked_tags_map_uncached
 
