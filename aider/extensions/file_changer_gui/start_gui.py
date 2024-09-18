@@ -90,7 +90,7 @@ class AiderFileGUIApp(QMainWindow):
 
         # Refresh Files button
         refresh_btn = QPushButton("Refresh Files")
-        refresh_btn.clicked.connect(self.scan_directory)
+        refresh_btn.clicked.connect(lambda: self.scan_directory(maintain_expansion=True))
         refresh_btn.setProperty("class", "button")
         layout.addWidget(refresh_btn)
 
@@ -294,9 +294,9 @@ class AiderFileGUIApp(QMainWindow):
         if dir_path:
             self.dir_input.setText(dir_path)
 
-    def scan_directory(self) -> None:
+    def scan_directory(self, maintain_expansion=True) -> None:
         checkbox_states = self.store_checkbox_states()
-        expansion_states = self.store_expansion_states()
+        expansion_states = self.store_expansion_states() if maintain_expansion else None
 
         directory = Path(self.dir_input.text())
         self.current_expansion_states = expansion_states  # Store expansion states
@@ -307,7 +307,7 @@ class AiderFileGUIApp(QMainWindow):
             formats = ["txt"]  # Default to txt if no valid formats are provided
         self.model.clear()
         root = self.model.invisibleRootItem()
-        self.populate_tree(root, directory, formats)
+        self.populate_tree(root, directory, formats, expansion_states)
 
         # Read the JSON file and update the checkboxes and readonly files
         if os.path.exists(self.aider_files_path):
@@ -326,7 +326,7 @@ class AiderFileGUIApp(QMainWindow):
                     self.set_item_checked(filename, True)
 
         self.restore_checkbox_states(checkbox_states)
-        if hasattr(self, 'current_expansion_states'):
+        if maintain_expansion and hasattr(self, 'current_expansion_states'):
             self.restore_expansion_states(self.current_expansion_states)
         self.update_aider_files_json()
         
@@ -334,7 +334,7 @@ class AiderFileGUIApp(QMainWindow):
         self.populate_readonly_tree(directory)
 
     def populate_tree(
-        self, parent: QStandardItem, path: Path, formats: List[str]
+        self, parent: QStandardItem, path: Path, formats: List[str], expansion_states=None
     ) -> None:
         folders = []
         files = []
@@ -355,7 +355,9 @@ class AiderFileGUIApp(QMainWindow):
 
         for item in folders:
             folder_item = self.add_item(parent, item.name, item)
-            self.populate_tree(folder_item, item, formats)
+            self.populate_tree(folder_item, item, formats, expansion_states)
+            if expansion_states and str(item) in expansion_states:
+                self.tree_view.setExpanded(self.proxy_model.mapFromSource(folder_item.index()), expansion_states[str(item)])
 
         for item in files:
             self.add_item(parent, item.name, item)
@@ -534,37 +536,37 @@ class AiderFileGUIApp(QMainWindow):
     def store_expansion_states(self) -> dict:
         states = {}
         self.store_expansion_states_recursive(
-            self.model.invisibleRootItem(), self.tree_view.rootIndex(), states, ""
+            self.model.invisibleRootItem(), self.tree_view.rootIndex(), states
         )
         return states
 
     def store_expansion_states_recursive(
-        self, parent: QStandardItem, parent_index: QModelIndex, states: dict, current_path: str
+        self, parent: QStandardItem, parent_index: QModelIndex, states: dict
     ) -> None:
         for row in range(parent.rowCount()):
             child_index = self.model.index(row, 0, parent_index)
             item = self.model.itemFromIndex(child_index)
-            path = os.path.join(current_path, item.text())
-            states[path] = self.tree_view.isExpanded(child_index)
+            path = item.data(Qt.UserRole)
+            states[str(path)] = self.tree_view.isExpanded(self.proxy_model.mapFromSource(child_index))
             if item.hasChildren():
-                self.store_expansion_states_recursive(item, child_index, states, path)
+                self.store_expansion_states_recursive(item, child_index, states)
 
     def restore_expansion_states(self, states: dict) -> None:
         self.restore_expansion_states_recursive(
-            self.model.invisibleRootItem(), self.tree_view.rootIndex(), states, ""
+            self.model.invisibleRootItem(), self.tree_view.rootIndex(), states
         )
 
     def restore_expansion_states_recursive(
-        self, parent: QStandardItem, parent_index: QModelIndex, states: dict, current_path: str
+        self, parent: QStandardItem, parent_index: QModelIndex, states: dict
     ) -> None:
         for row in range(parent.rowCount()):
             child_index = self.model.index(row, 0, parent_index)
             item = self.model.itemFromIndex(child_index)
-            path = os.path.join(current_path, item.text())
-            if path in states:
-                self.tree_view.setExpanded(child_index, states[path])
+            path = item.data(Qt.UserRole)
+            if str(path) in states:
+                self.tree_view.setExpanded(self.proxy_model.mapFromSource(child_index), states[str(path)])
             if item.hasChildren():
-                self.restore_expansion_states_recursive(item, child_index, states, path)
+                self.restore_expansion_states_recursive(item, child_index, states)
 
     def on_item_changed(self, item: QStandardItem) -> None:
         # Disconnect the signal temporarily to avoid recursive calls
