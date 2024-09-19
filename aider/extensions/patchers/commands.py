@@ -27,5 +27,44 @@ def apply_patch():
 
         setattr(Commands, 'cmd_filegui', cmd_filegui)
 
+    def add_silent_commands():
+        def cmd_drop_silent(self, args):
+            "Silently drop files from the chat session"
+            original_tool_output = self.io.tool_output
+            self.io.tool_output = lambda *args, **kwargs: None
+            try:
+                self.cmd_drop(args)
+            except Exception as e:
+                original_tool_output(f"Error: {str(e)}")
+            finally:
+                self.io.tool_output = original_tool_output
+
+        def cmd_add_silent(self, args):
+            "Silently add files to the chat session"
+            original_tool_output = self.io.tool_output
+            self.io.tool_output = lambda *args, **kwargs: None
+            try:
+                self.cmd_add(args)
+            except Exception as e:
+                original_tool_output(f"Error: {str(e)}")
+            finally:
+                self.io.tool_output = original_tool_output
+
+        def cmd_read_only_silent(self, args):
+            "Silently add read-only files to the chat session"
+            original_tool_output = self.io.tool_output
+            self.io.tool_output = lambda *args, **kwargs: None
+            try:
+                self.cmd_read_only(args)
+            except Exception as e:
+                original_tool_output(f"Error: {str(e)}")
+            finally:
+                self.io.tool_output = original_tool_output
+
+        setattr(Commands, 'cmd_drop_silent', cmd_drop_silent)
+        setattr(Commands, 'cmd_add_silent', cmd_add_silent)
+        setattr(Commands, 'cmd_read_only_silent', cmd_read_only_silent)
+
     add_cmd_helloworld()
     add_cmd_filegui()
+    add_silent_commands()
