@@ -86,7 +86,7 @@ class FileWatcherExtension:
         print("\033[92m")  # ANSI escape code for green text
         print("""
 +-----------------------+
-| YOU ARE USING AIDER++  |
+| YOU ARE USING AIDER++ |
 +-----------------------+
         """.strip())
         print("\033[0m")  # ANSI escape code to reset text color
