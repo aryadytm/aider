@@ -84,15 +84,11 @@ class FileWatcherExtension:
 
     def setup(self):
         print("\033[92m")  # ANSI escape code for green text
-        print(
-            "+----------------------------------------------------------------------+"
-        )
-        print(
-            "| YOU ARE USING SPECIAL VERSION OF AIDER THAT READS `.aider-files.json` |"
-        )
-        print(
-            "+----------------------------------------------------------------------+"
-        )
+        print("""
++-----------------------+
+| YOU ARE USING AIDER++  |
++-----------------------+
+        """.strip())
         print("\033[0m")  # ANSI escape code to reset text color
         print("Coder Root:", self.coder.root)
         aider_files_json = os.path.join(self.coder.root, AIDER_FILES_FILE)
