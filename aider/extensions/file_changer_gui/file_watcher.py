@@ -55,16 +55,16 @@ class AiderFileHandler(FileSystemEventHandler):
             read_only_files_to_add = new_read_only_files - existing_read_only_files
 
             for file in files_to_remove:
-                self.coder.run_one(f"/drop {file}", preproc=True)
+                self.coder.run_one(f"/drop-silent {file}", preproc=True)
 
             for file in read_only_files_to_remove:
-                self.coder.run_one(f"/drop {file}", preproc=True)
+                self.coder.run_one(f"/drop-silent {file}", preproc=True)
 
             for file in files_to_add:
-                self.coder.run_one(f"/add {file}", preproc=True)
+                self.coder.run_one(f"/add-silent {file}", preproc=True)
 
             for file in read_only_files_to_add:
-                self.coder.run_one(f"/read-only {file}", preproc=True)
+                self.coder.run_one(f"/read-only-silent {file}", preproc=True)
 
             if (
                 files_to_remove
