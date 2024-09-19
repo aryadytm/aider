@@ -34,14 +34,11 @@ class ExtensionLoader:
             spec.loader.exec_module(module)
 
             if hasattr(module, 'setup_extension'):
-                print(f"\033[94mSetting up extension: {module_name}\033[0m")
                 extension = module.setup_extension(self.coder)
                 self.extensions.append(extension)
                 print(f"\033[92mSuccessfully set up extension: {module_name}\033[0m")
-            else:
-                print(f"Extension {module_name} does not have a setup_extension function")
         except Exception as e:
-            print(f"Error loading extension {module_name}: {str(e)}")
+            print(f"\033[91mError loading extension {module_name}: {str(e)}\033[0m")
 
     def cleanup_extensions(self) -> None:
         for extension in self.extensions:
@@ -52,6 +49,7 @@ class ExtensionLoader:
 # Apply patches
 def apply_patches():
     # return
+    print("Starting AIDER++...")
     print("\033[94mApplying patches...\033[0m")
     
     extensions_dir = os.path.join(os.path.dirname(__file__), 'extensions')
@@ -73,10 +71,7 @@ def apply_patches():
                     spec.loader.exec_module(module)
 
                     if hasattr(module, 'apply_patch'):
-                        print(f"\033[94mApplying patch: {module_name}\033[0m")
                         module.apply_patch()
                         print(f"\033[92mSuccessfully applied patch: {module_name}\033[0m")
-                    else:
-                        print(f"Extension {module_name} does not have an apply_patch function")
                 except Exception as e:
-                    print(f"Error applying patch for {module_name}: {str(e)}")
+                    print(f"\033[91mError applying patch for {module_name}: {str(e)}\033[0m")

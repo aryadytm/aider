@@ -1,7 +1,8 @@
-<plansearch_info>
+<custom_command>
+<plansearch_command>
 User can request PlanSearch plan by using ".plansearch [task]" in the command.
 When responding to PlanSearch software engineering requests, you MUST ALWAYS follow the PlanSearch response template provided below inside <plansearch_response_template/>.
-</plansearch_info>
+</plansearch_command>
 
 <rules>
 - Treat curly brackets as variables that you need to fill based on the defined variables.
@@ -14,7 +15,7 @@ When responding to PlanSearch software engineering requests, you MUST ALWAYS fol
 </rules>
 
 <default_variables note="This can be overriden in user query">
-n_observations = 20
+n_ideas = 20
 </default_variables>
 
 <plansearch_response_template>
@@ -53,7 +54,7 @@ Otherwise say "NO NEW FILES, I WILL CONTINUE TO NEXT STEP".
 
 # STEP 2: Generating Possible Solutions
 
-I will brainstorm for solutions. Here are {n_observations} possible solutions or approaches that help accomplish the task:
+I will brainstorm for solutions. Here are {n_ideas} possible solutions or approaches that help accomplish the task:
 [Numbered list of possible solutions]
 
 # STEP 3: Selecting Solutions
@@ -81,12 +82,26 @@ To make the plan clear, in each step of the plan, I need to:
 - Specify what changes to make in the code based on specified file and class/method/function.
 - I will quote the file/class/method/functions using single backtick.
 
-At the last steps of the plan, I will not forget to update the imports or any missing imports, and check for nonexistent calls.
-
 I will ensure that the human is not fired by providing a flawless plan. I will also strive to earn a $250 tip by delivering the perfect response.
 
 Here is the carefully step-by-step ACTIONABLE (each step involves coding) and NON-REPETITIVE (no same function/method-level modifications in different steps) coding plan (tutorial) based on the BEST SOLUTIONS to accomplish the task:
-[The step by step tutorial in numbered list. You can NEST THE NUMBERED LIST to make the plan more clear. Your steps must ALWAYS clear, actionable and INVOLVES CODING in each steps]
+[
+The step by step tutorial. You can NEST THE STEPS to make the plan more clear. Your steps must ALWAYS clear, actionable and INVOLVES CODING in each steps.
+
+Example:
+**Step 1: Modify the `scan_directory` method in `AiderFileGUIApp` class**                                     
+- 1.1. Add a new parameter `maintain_expansion=True` to the method signature.                              
+- 1.2. If `maintain_expansion` is `True`, call `store_expansion_states` before clearing the model.             
+- 1.3. After populating the tree, call `restore_expansion_states` if `maintain_expansion` is `True`. 
+]
+
+Extra Steps:
+
+**Checking Missing Imports:**
+[[Plan step]. If there are missing imports, list them here]
+
+**Checking Calls to Nonexistent Classes/Methods/Functions:**
+[[Plan step]. If there are call to nonexistent Classes/Methods/Functions, list them here]
 
 I have completed the PlanSearch response for the task. 
 I can help you apply these changes using ".psapply" command. 
@@ -128,11 +143,18 @@ I will use SEARCH/REPLACE blocks WITH FILE PATH to apply the changes to the code
 For EACH STEP in the plan, use this template:
 
 **Step [Parent plan step number]: [Description]**
-[Nested steps in bullet list. Example: - 1.1 Modify blablabla]
+[Nested steps in bullet list. Example: - 1.1. Modify database logic]
 
 [The code changes for the parent plan using SEARCH/REPLACE block based on the example with full file path included. NOTE: DO NOT NEST triple backticks!]
 ]
 
+**Checking Missing Imports:**
+[For each missing imports, write code changes here SEARCH/REPLACE]
+
+**Checking Calls to Nonexistent Classes/Methods/Functions:**
+[For each calls to nonexistent classes/methods/functions, write code changes here SEARCH/REPLACE]
+
 I have successfully applied the PlanSearch plan to the codebase.
 I WILL STOP WRITING UNTIL THE NEXT QUERY.
 </psapply_response_template>
+</custom_command>
