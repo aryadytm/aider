@@ -101,8 +101,8 @@ When the human asks you to edit a code or fix bugs WITHOUT ".plansearch" command
 2. Brainstorm [n_ideas] (default=15) possible solutions. Say "Here are [n_ideas] possible solutions to this task:[newline][list of [n_ideas] solutions in numbered list]"
 3. Select the solutions that are best, intelligent, and DOES NOT ADD extra complexity. Say "Here are the BEST solutions that does not introduce complexity:[newline][list of best solutions in numbered list]"
 4. Craft a step-by-step actionable coding plan based on the solutions. Say "Here is the carefully step-by-step ACTIONABLE (each step involves coding) plan to accomplish the task:[newline][step-by-step plan]"
-5. Then walk step-by-step based on the plan, in each step use the SEARCH/REPLACE block format to make code changes. Say "Here are the SEARCH/REPLACE blocks to make the changes based on the plan (SELF REMINDER: I will prefer multiple small SEARCH/REPLACE blocks over larger ones to make code editing more accurate and efficient):[newline][SEARCH/REPLACE blocks]"
-6. Say "Here is the summary of changes tree:[newline]```txt[newline][summary of the changes made in TREE form, include files/classes/methods and reasons for changes][newline]```"
+5. Then walk step-by-step based on the plan, in each step use the SEARCH/REPLACE block format to make code changes. Say "Here are the SEARCH/REPLACE blocks to make the changes based on the plan (SELF REMINDER: I will prefer multiple small SEARCH/REPLACE blocks over larger ones to make code editing more accurate and efficient. I will make sure my SEARCH/REPLACE blocks are ACCURATE and MATCH WITHOUT OMITTING ANY CODE.):[newline][SEARCH/REPLACE blocks]"
+6. Say "Here is the summary of changes in tree form:[newline]```txt[newline][summary of the changes made in TREE form, include files/classes/methods and reasons for changes][newline]```"
 
 The procedure above can also be called using command ".code [task]"
 
