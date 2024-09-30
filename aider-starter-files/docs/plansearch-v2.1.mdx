@@ -23,7 +23,7 @@ As an expert software engineer, I will make a PlanSearch plan to accomplish the 
 
 Task: **[task]**.
 
-I WILL NOT modify or skip my internal monologue (though verbatim) to improve my performance.
+I WILL NOT modify or skip my internal monologue (though verbatim) including my SELF REMINDER to improve my performance.
 
 First, I must remember the variables.
 
@@ -41,19 +41,21 @@ Here is the carefully crafted PlanSearch response to the task.
 
 # STEP 1: Understanding the Task
 
-Task: **[task]**
-
 First, I need to view codebase in larger picture that includes files and classes that has FULL file contents included from user:
 ```txt
 [Tree of files and classes that has FULL file contents provided by user]
 ```
 
-Then, I need to understand the task in depth. Here is the deep, detailed, comprehensive analysis of the task:
+Then, I need to understand the task in depth. Here is the deep, detailed, comprehensive analysis of the task.
+
+Task: **[task]**.
+
+Deep understanding of the task:
 ```txt
 [Understand the task in depth]
 ```
 
-Now I need to understand the task and relate it to the existing codebase. Here is the analysis of the existing codebase in relation to the task:
+Now I need to relate the task with existing codebase. Here is the analysis of the existing codebase in relation to the task:
 ```txt
 [Understand the existing codebase in deeper way, and relate it to the task]
 ```
@@ -67,7 +69,7 @@ I will brainstorm for solutions that helpful to accomplish the task. Here are {n
 [Numbered list of solutions]
 ```
 
-After generating initial possible solutions, I will brainstorm several new, useful, and helpful potential solutions that DERIVED from the previously generated solutions. I will be as creative as possible, going beyond what I think is intuitively correct.
+After generating initial possible solutions, I will brainstorm several new, useful, and helpful potential solutions that DERIVED from the previously generated solutions. I will be as creative as possible.
 
 Here are the new potential solutions DERIVED from the previous solutions:
 ```txt
@@ -106,7 +108,9 @@ To make the tutorial clear, in each step of the tutorial, I need to:
 - Specify what changes to make in the code based on specified file and class/method/function.
 - I will quote the file/class/method/functions using single backtick.
 
-I will ensure that the human is not fired by providing a flawless tutorial. I will also strive to earn a $250 tip by delivering the perfect response. In the end, I will also include the tree summarizing the changes.
+SELF REMINDER:
+- I will NOT WRITE SEARCH/REPLACE code changes in `.plansearch` phase. I will ONLY write them in `.psapply` phase.
+- I will ensure that the human is not fired by providing a flawless tutorial. I will also strive to earn a $250 tip by delivering the perfect response. In the end, I will also include the tree summarizing the changes.
 
 ## Here is the carefully crafted step-by-step ACTIONABLE coding tutorial to accomplish the task that are SIMPLE, DOES NOT ADD UNNECESSARY COMPLEXITY but VERY HELPFUL and RELEVANT to accomplish the task:
 
@@ -118,11 +122,11 @@ Template example:
 
 # STEP 1
 
-Related solution: 
-- <quote>[solution_number]. **[Quote from solution]**</quote>
+Related best solution(s): 
+- <quote>[best_solution_number]. **[Quote from best solution]**</quote>
 
 Related codebase entities:
-- [Related codebase entities (files/classes/methods/function/properties) in comma separated]
+[Related codebase entities (files/classes/methods/function/properties) in TREE form]
 
 Detailed substeps:
 - 1.1. [Actionable coding step 1.1]
@@ -144,19 +148,37 @@ MyApp/
  ├── Source/
  │   ├── AppState.swift
  │   │   └── class AppState
- │   │       ├── + transcriptionText: String  -  To store transcription in AppState instead of SpeechView
- │   │       └── + appendTranscription(_ text: String)  -  Helper method to append transcription
+ │   │       ├── + transcriptionText: String
+ │   │       └── + appendTranscription(_ text: String)
  │   └── AllViews.swift
  │       ├── struct SpeechView
- │       │   ├── - speechText: String  -  No longer needed as its moved to AppState as `transcriptionText`
- │       │   ├── + transcriptionTextBinding: Binding<String>  -  To be bound with appState.transcriptionText
- │       │   ├── ~ SpeechCard  -  Make initialization using $appState.transcriptionText
- │       │   ├── ~ .onChange()  -  Now updating appState.transcriptionText instead of speechText
- │       │   └── ~ toggleRecording()  -  Make it clear appState.transcriptionText when new recording
+ │       │   ├── - speechText: String
+ │       │   ├── + transcriptionTextBinding: Binding<String>
+ │       │   ├── ~ SpeechCard
+ │       │   ├── ~ .onChange()
+ │       │   └── ~ toggleRecording()
  │       └── struct SpeechCard
- │           ├── - speechText: Binding<String>  -  Change from speechText into transcriptionText
- │           ├── + transcriptionText: Binding<String>  -  Change from speechText into transcriptionText
- │           └── ~ TextEditor  -  Modified to use $transcriptionText binding
+ │           ├── - speechText: Binding<String>
+ │           ├── + transcriptionText: Binding<String>
+ │           └── ~ TextEditor
+
+Reasons:
+
+- MyApp/Source/AppState.swift
+    - class AppState
+        - (+) `transcriptionText` to store transcription in AppState instead of SpeechView
+        - (+) `appendTranscription(_ text: String)` helper method to append transcription
+
+- MyApp/Source/AllViews.swift
+    - struct SpeechView
+        - (-) `speechText` as it is now stored in AppState as `transcriptionText`
+        - (+) `transcriptionTextBinding` to bind with `appState.transcriptionText`
+        - (~) `SpeechCard` initialization to use `$appState.transcriptionText`
+        - (~) `.onChange()` to update `appState.transcriptionText` instead of `speechText`
+        - (~) `toggleRecording()` to clear `appState.transcriptionText` when starting a new recording
+    - struct SpeechCard
+        - (~) `speechText` to `transcriptionText` binding
+        - (~) `TextEditor` to use `$transcriptionText` binding
 ]
 ```
 
@@ -179,9 +201,14 @@ As an expert software engineer, I will carefully modify the codebase based on th
 
 Task: **[task]**.
 
-I will ensure that the human is not fired by providing a flawless code changes based on the plan. I will also strive to earn a $250 tip by delivering the perfect response.
+Does the user query contain any user defined variables?
+```txt
+[User defined variables if exists, else say None]
+```
 
-I will FOLLOW the format which is:
+SELF REMINDER:
+- I will ensure that the human is not fired by providing a flawless code changes based on the plan. I will also strive to earn a $250 tip by delivering the perfect response.
+- I will FOLLOW the format which is:
 """
 For EACH STEP in the plan, using this template:
 
@@ -193,12 +220,11 @@ Substeps:
 Accurate SEARCH/REPLACE blocks for this step:
 |For each changes you need to make, use SEARCH/REPLACE with file path included|
 """
-
 Where the "|Placeholder|" denotes the variable that I need to fill myself later.
 
 Now I will use SEARCH/REPLACE blocks to apply the changes to the codebase BASED ON THE STEP BY STEP PLAN TUTORIAL.
 
-**SELF REMINDER:**
+SELF REMINDER:
 - I must FOLLOW the SEARCH/REPLACE format rules.
 - I must include FILE PATH in each SEARCH/REPLACE block.
 - I must NOT NEST the "```" triple backticks in SEARCH/REPLACE blocks.
@@ -206,6 +232,8 @@ Now I will use SEARCH/REPLACE blocks to apply the changes to the codebase BASED 
 - I must NOT OMIT any existing code using comments such as "// ... existing code ..." in my SEARCH/REPLACE blocks.
 - My SEARCH blocks must EXACTLY matches the code I need to change.
 - My REPLACE blocks must be ACCURATE and does not introduce any bugs or syntax errors.
+
+(EXCEPT the human EXPLICITLY want a different format in the `.psapply` query)
 
 Now I will execute the plan **VERY CAREFULLY**.
 
@@ -221,11 +249,17 @@ Accurate SEARCH/REPLACE blocks for this step:
 [For each changes you need to make, use SEARCH/REPLACE with file path included]
 ]
 
-**Checking Missing Imports:**
+SELF REMINDER: 
+- I need to make sure my changes are ACCURATE and FLAWLESS. I will do some final checks.
+
+First, I need to check for missing imports:
 [For each missing imports, write code changes here SEARCH/REPLACE]
 
-**Checking Calls to Nonexistent Classes/Methods/Functions/Properties:**
+Second, I need to check for calls to Classes/Methods/Functions/Properties, or I may renamed or removed them so I need to fix:
 [For each calls to nonexistent classes/methods/functions/properties, write code changes here using SEARCH/REPLACE]
+
+Third, I need to check for syntax errors:
+[List of syntax errors and SEARCH/REPLACE blocks to fix them]
 
 I have successfully applied the PlanSearch plan to the codebase.
 I WILL STOP WRITING UNTIL THE NEXT QUERY.
