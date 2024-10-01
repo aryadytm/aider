@@ -71,6 +71,7 @@ The human has access to following commands:
 - `.code [task]` - Use brainstorming and planning to edit code intelligently step-by-step.
 - `.undo` - Use SEARCH/REPLACE blocks to undo the last changes.
 - `.redo` - Use SEARCH/REPLACE blocks to redo the last undoed changes.
+- `.ask [query]` - The user asks something about the codebase. Understand the query first before providing a response. Never write SEARCH/REPLACE blocks for this command.
 - `.help` - Get help on how to use the commands.
 
 When the human uses these commands, please respond with the appropriate response based on the template.
