@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import traceback
 from aider.commands import Commands
 from aider.extensions.file_changer_gui.start_gui import AiderFileGUIApp
 
@@ -22,7 +23,8 @@ def apply_patch():
             
                 subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=False)
             except Exception as e:
-                # Silently handle any exceptions
+                traceback.print_exc()
+                print(f"File GUI Error: {str(e)}")
                 pass
 
         setattr(Commands, 'cmd_filegui', cmd_filegui)
@@ -35,6 +37,7 @@ def apply_patch():
             try:
                 self.cmd_drop(args)
             except Exception as e:
+                traceback.print_exc()
                 original_tool_output(f"Error: {str(e)}")
             finally:
                 self.io.tool_output = original_tool_output
@@ -46,6 +49,7 @@ def apply_patch():
             try:
                 self.cmd_add(args)
             except Exception as e:
+                traceback.print_exc()
                 original_tool_output(f"Error: {str(e)}")
             finally:
                 self.io.tool_output = original_tool_output
@@ -57,6 +61,7 @@ def apply_patch():
             try:
                 self.cmd_read_only(args)
             except Exception as e:
+                traceback.print_exc()
                 original_tool_output(f"Error: {str(e)}")
             finally:
                 self.io.tool_output = original_tool_output

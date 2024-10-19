@@ -1,6 +1,8 @@
 import os
 import sys
 import json
+import threading
+import traceback
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -10,71 +12,84 @@ AIDER_FILES_FILE = ".aider-files.json"
 class AiderFileHandler(FileSystemEventHandler):
     def __init__(self, coder):
         self.coder = coder
+        self.debounce_timer = None
         self.sync_files_from_aider_files_json()
 
     def on_modified(self, event):
         if event.src_path.endswith(AIDER_FILES_FILE):  # type: ignore
-            self.sync_files_from_aider_files_json()
+            if self.debounce_timer:
+                self.debounce_timer.cancel()
+            self.debounce_timer = threading.Timer(
+                0.2, self.sync_files_from_aider_files_json
+            )
+            self.debounce_timer.start()
 
     def sync_files_from_aider_files_json(self):
         aider_files_json = os.path.join(self.coder.root, AIDER_FILES_FILE)
         if os.path.exists(aider_files_json):
-            existing_files = set(self.coder.get_inchat_relative_files())
-            existing_read_only_files = set(
-                self.coder.get_rel_fname(fname)
-                for fname in self.coder.abs_read_only_fnames
-            )
-
-            with open(aider_files_json, "r") as f:
-                file_list = json.load(f)
-
-            new_files = set()
-            new_read_only_files = set()
-            for file_obj in file_list:
-                file = file_obj["filename"]
-                is_read_only = file_obj.get("is_read_only", False)
-                abs_path = (
-                    file
-                    if os.path.isabs(file)
-                    else os.path.abspath(os.path.join(self.coder.root, file))
+            try:
+                existing_files = set(self.coder.get_inchat_relative_files())
+                existing_read_only_files = set(
+                    self.coder.get_rel_fname(fname)
+                    for fname in self.coder.abs_read_only_fnames
                 )
-                rel_path = os.path.relpath(abs_path, self.coder.root)
-                if os.path.exists(abs_path):
-                    if is_read_only:
-                        new_read_only_files.add(rel_path)
-                    else:
-                        new_files.add(rel_path)
-                else:
-                    self.coder.io.tool_error(
-                        f"File does not exist and will not be added: {abs_path}"
+
+                with open(aider_files_json, "r") as f:
+                    file_list = json.load(f).get("files", [])
+
+                new_files = set()
+                new_read_only_files = set()
+                for file_obj in file_list:
+                    file = file_obj["filename"]
+                    is_read_only = file_obj.get("is_read_only", False)
+                    abs_path = (
+                        file
+                        if os.path.isabs(file)
+                        else os.path.abspath(os.path.join(self.coder.root, file))
                     )
+                    rel_path = os.path.relpath(abs_path, self.coder.root)
+                    if os.path.exists(abs_path):
+                        if is_read_only:
+                            new_read_only_files.add(rel_path)
+                        else:
+                            new_files.add(rel_path)
+                    else:
+                        self.coder.io.tool_error(
+                            f"File does not exist and will not be added: {abs_path}"
+                        )
 
-            files_to_remove = existing_files - new_files
-            read_only_files_to_remove = existing_read_only_files - new_read_only_files
-            files_to_add = new_files - existing_files
-            read_only_files_to_add = new_read_only_files - existing_read_only_files
+                files_to_remove = existing_files - new_files
+                read_only_files_to_remove = (
+                    existing_read_only_files - new_read_only_files
+                )
+                files_to_add = new_files - existing_files
+                read_only_files_to_add = new_read_only_files - existing_read_only_files
 
-            for file in files_to_remove:
-                self.coder.run_one(f"/drop-silent {file}", preproc=True)
+                for file in files_to_remove:
+                    self.coder.run_one(f"/drop-silent {file}", preproc=True)
 
-            for file in read_only_files_to_remove:
-                self.coder.run_one(f"/drop-silent {file}", preproc=True)
+                for file in read_only_files_to_remove:
+                    self.coder.run_one(f"/drop-silent {file}", preproc=True)
 
-            for file in files_to_add:
-                self.coder.run_one(f"/add-silent {file}", preproc=True)
+                for file in files_to_add:
+                    self.coder.run_one(f"/add-silent {file}", preproc=True)
 
-            for file in read_only_files_to_add:
-                self.coder.run_one(f"/read-only-silent {file}", preproc=True)
+                for file in read_only_files_to_add:
+                    self.coder.run_one(f"/read-only-silent {file}", preproc=True)
 
-            if (
-                files_to_remove
-                or read_only_files_to_remove
-                or files_to_add
-                or read_only_files_to_add
-            ):
-                pass
+                if (
+                    files_to_remove
+                    or read_only_files_to_remove
+                    or files_to_add
+                    or read_only_files_to_add
+                ):
+                    pass
 
-            self.coder.first_launch = False
+                self.coder.first_launch = False
+            except Exception as e:
+                traceback.print_exc()
+                self.coder.io.tool_error(f"Error processing {AIDER_FILES_FILE}: {e}")
+                # Continue watching for changes
 
 
 class FileWatcherExtension:
@@ -84,11 +99,13 @@ class FileWatcherExtension:
 
     def setup(self):
         print("\033[92m")  # ANSI escape code for green text
-        print("""
+        print(
+            """
 +-----------------------+
 | YOU ARE USING AIDER++ |
 +-----------------------+
-        """.strip())
+        """.strip()
+        )
         print("\033[0m")  # ANSI escape code to reset text color
         print("Coder Root:", self.coder.root)
         aider_files_json = os.path.join(self.coder.root, AIDER_FILES_FILE)
