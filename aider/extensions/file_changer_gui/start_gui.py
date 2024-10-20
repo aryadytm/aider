@@ -684,17 +684,27 @@ class AiderFileGUIApp(QMainWindow):
         for file_path in sorted(self.readonly_tree_files):
             relative_path = os.path.relpath(file_path, directory)
             path_parts = relative_path.split(os.sep)
-            self.add_readonly_item(root_item, path_parts, file_path)
+            self.add_readonly_item(root_item, path_parts, file_path, str(directory))
+
+        # Update parent check states after populating the tree
+        self.update_readonly_parent_check_state_recursive(root_item)
+
         # Connect the signal after populating
         self.readonly_model.itemChanged.connect(self.on_readonly_item_changed)
 
     def add_readonly_item(
-        self, parent: QStandardItem, path_parts: List[str], full_path: str
+        self,
+        parent: QStandardItem,
+        path_parts: List[str],
+        full_path: str,
+        current_path: str,
     ):
         if not path_parts:
             return
         part = path_parts[0]
         child = self.find_child(parent, part)
+        new_current_path = os.path.join(current_path, part)
+
         if child is None:
             child = QStandardItem(part)
             child.setEditable(False)
@@ -705,10 +715,9 @@ class AiderFileGUIApp(QMainWindow):
             else:
                 child.setCheckState(Qt.Unchecked)
             parent.appendRow(child)
-        if len(path_parts) == 1:
-            child.setData(full_path, Qt.UserRole)
-        else:
-            self.add_readonly_item(child, path_parts[1:], full_path)
+        child.setData(new_current_path, Qt.UserRole)  # Store full path
+        if len(path_parts) > 1:
+            self.add_readonly_item(child, path_parts[1:], full_path, new_current_path)
 
     def find_child(self, parent: QStandardItem, text: str) -> Optional[QStandardItem]:
         for row in range(parent.rowCount()):
@@ -953,6 +962,29 @@ class AiderFileGUIApp(QMainWindow):
             else:
                 count += 1
         return count
+
+    # Added method to update parent check states recursively
+    def update_readonly_parent_check_state_recursive(self, item: QStandardItem):
+        if item.hasChildren():
+            for row in range(item.rowCount()):
+                child = item.child(row)
+                self.update_readonly_parent_check_state_recursive(child)
+            # Now update this item's check state based on children's states
+            checked = 0
+            unchecked = 0
+            for row in range(item.rowCount()):
+                child = item.child(row)
+                state = child.checkState()
+                if state == Qt.Checked:
+                    checked += 1
+                elif state == Qt.Unchecked:
+                    unchecked += 1
+            if checked == item.rowCount():
+                item.setCheckState(Qt.Checked)
+            elif unchecked == item.rowCount():
+                item.setCheckState(Qt.Unchecked)
+            else:
+                item.setCheckState(Qt.PartiallyChecked)
 
 
 def signal_handler(signum, frame):
