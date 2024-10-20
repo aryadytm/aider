@@ -7,6 +7,10 @@ import traceback  # Import traceback for detailed error information
 from pathlib import Path
 from typing import List, Optional, Dict, Set
 
+import keyboard  # Added for global hotkeys
+import pyperclip  # Added for clipboard operations
+from pynput.keyboard import Key, Controller  # Added for simulating key presses
+
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -31,6 +35,13 @@ DEFAULT_DIRECTORY = os.getcwd()
 DEFAULT_FORMATS = "py,js,jsx,ts,tsx,swift,java,c,cs,cpp,md,mdx,kt,ktx,json,yaml,yml,env,txt,sh,scm,prisma"
 PATH_AIDER_FILES_JSON = ".aider-files.json"
 PATH_PRESET_JSON = ".aider-filegui-preset.json"
+
+# Define OS flags
+IS_WINDOWS = sys.platform.startswith("win")
+IS_MACOS = sys.platform.startswith("darwin")
+
+# Initialize keyboard controller
+pykb = Controller()
 
 
 def parse_arguments():
@@ -75,10 +86,62 @@ class AiderFileGUIApp(QMainWindow):
 
         self.preset_file_path = os.path.join(self.working_directory, PATH_PRESET_JSON)
 
+        self.setup_global_hotkey()
         self.init_ui()
         self.apply_dark_theme()
         self.load_preset()
         self.scan_directory()
+
+    def setup_global_hotkey(self):
+        if IS_WINDOWS:
+            keyboard.add_hotkey("alt+f1", self.global_hotkey_action)
+        elif IS_MACOS:
+            keyboard.add_hotkey("command+f1", self.global_hotkey_action)
+
+    def global_hotkey_action(self):
+        QTimer.singleShot(0, self.copy_and_paste_content)
+
+    def copy_and_paste_content(self):
+        clipboard_content = self.generate_clipboard_content()
+        pyperclip.copy(clipboard_content)
+        QTimer.singleShot(100, self.simulate_paste)
+
+    def simulate_paste(self):
+        if IS_WINDOWS:
+            with pykb.pressed(Key.ctrl):
+                pykb.press("v")
+                pykb.release("v")
+        elif IS_MACOS:
+            with pykb.pressed(Key.cmd):
+                pykb.press("v")
+                pykb.release("v")
+
+    def generate_clipboard_content(self) -> str:
+        selected_files = self.get_checked_files(self.model.invisibleRootItem())
+        selected_files += list(self.readonly_files)
+
+        if not selected_files:
+            QMessageBox.warning(
+                self, "No Files Selected", "Please select at least one file to copy."
+            )
+            return ""
+
+        formatted_content = ""
+        for file_path in selected_files:
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    content = file.read()
+                    file_format = Path(file_path).suffix[1:]
+                    formatted_content += (
+                        f"{file_path}\n```{file_format}\n{content}\n```\n"
+                    )
+            except Exception as e:
+                traceback.print_exc()  # Print full traceback to the console
+                QMessageBox.warning(
+                    self, "Error", f"Error reading file {file_path}: {str(e)}"
+                )
+                return ""
+        return formatted_content
 
     def init_ui(self):
         self.setWindowTitle("Aider File Selector")
