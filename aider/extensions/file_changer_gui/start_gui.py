@@ -117,8 +117,8 @@ class AiderFileGUIApp(QMainWindow):
                 pykb.release("v")
 
     def generate_clipboard_content(self) -> str:
-        selected_files = self.get_checked_files(self.model.invisibleRootItem())
-        selected_files += list(self.readonly_files)
+        selected_files = list(self.readonly_files)
+        selected_files += self.get_checked_files(self.model.invisibleRootItem())
 
         if not selected_files:
             QMessageBox.warning(
@@ -126,14 +126,14 @@ class AiderFileGUIApp(QMainWindow):
             )
             return ""
 
-        formatted_content = ""
+        formatted_content = "Working Directory: " + self.working_directory + "\n\n"
         for file_path in selected_files:
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
                     content = file.read()
                     file_format = Path(file_path).suffix[1:]
                     formatted_content += (
-                        f"{file_path}\n```{file_format}\n{content}\n```\n"
+                        f"{file_path}\n```{file_format}\n{content}\n```\n\n"
                     )
             except Exception as e:
                 traceback.print_exc()  # Print full traceback to the console
@@ -141,7 +141,7 @@ class AiderFileGUIApp(QMainWindow):
                     self, "Error", f"Error reading file {file_path}: {str(e)}"
                 )
                 return ""
-        return formatted_content
+        return formatted_content + "\n"
 
     def init_ui(self):
         self.setWindowTitle("Aider File Selector")
@@ -670,8 +670,8 @@ class AiderFileGUIApp(QMainWindow):
                 self.set_check_state_recursive(item, state)
 
     def copy_selected_files_to_clipboard(self):
-        selected_files = self.get_checked_files(self.model.invisibleRootItem())
-        selected_files += list(self.readonly_files)
+        selected_files = list(self.readonly_files)
+        selected_files += self.get_checked_files(self.model.invisibleRootItem())
 
         if not selected_files:
             QMessageBox.warning(
@@ -679,14 +679,14 @@ class AiderFileGUIApp(QMainWindow):
             )
             return
 
-        formatted_content = ""
+        formatted_content = "Working Directory: " + self.working_directory + "\n\n"
         for file_path in selected_files:
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
                     content = file.read()
                     file_format = Path(file_path).suffix[1:]
                     formatted_content += (
-                        f"{file_path}\n```{file_format}\n{content}\n```\n"
+                        f"{file_path}\n```{file_format}\n{content}\n```\n\n"
                     )
             except Exception as e:
                 traceback.print_exc()  # Print full traceback to the console
@@ -696,7 +696,7 @@ class AiderFileGUIApp(QMainWindow):
                 return
 
         clipboard = QApplication.clipboard()
-        clipboard.setText(formatted_content)
+        clipboard.setText(formatted_content + "\n")
 
     def show_context_menu(self, position):
         index = self.tree_view.indexAt(position)
