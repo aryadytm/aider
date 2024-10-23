@@ -140,6 +140,7 @@ def fmt_system_prompt(self, prompt):
 
 
 def apply_patch():
+    return
     print("Applying Custom Reminder to PlanSearch")
     EditBlockPrompts.system_reminder = EditBlockPlanSearchPrompts.system_reminder
 
