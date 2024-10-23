@@ -1,5 +1,5 @@
 - name: openai/claude-3.5-sonnet
-  accepts_images: false
+  accepts_images: true
   cache_control: true
   caches_by_default: false
   edit_format: diff
