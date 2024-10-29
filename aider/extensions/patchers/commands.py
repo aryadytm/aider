@@ -16,10 +16,11 @@ def apply_patch():
         def cmd_filegui(self, args):
             "Start the file GUI based on the coder root path"
             try:
-                command = [sys.executable, '-c', 
-                           'from aider.extensions.file_changer_gui.start_gui import AiderFileGUIApp; '
-                           'from PyQt5.QtWidgets import QApplication; '
-                           f'app = QApplication([]); ex = AiderFileGUIApp("{self.coder.root}"); ex.show(); app.exec_()']
+                command = [
+                    sys.executable, 
+                    '-m', 
+                    'aider.extensions.file_changer_gui.start_gui',
+                ]
             
                 subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=False)
             except Exception as e:
