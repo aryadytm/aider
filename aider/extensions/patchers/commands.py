@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 import traceback
@@ -16,24 +17,29 @@ def apply_patch():
             "Start the file GUI based on the coder root path"
             try:
                 command = [
-                    sys.executable, 
-                    '-m', 
-                    'aider.extensions.file_changer_gui.start_gui',
-                    '--directory',
-                    self.coder.root,
+                    sys.executable,
+                    f"{os.environ.get('PATH_AIDER', '')}/aider/extensions/file_changer_gui.py",
                 ]
             
-                # Create process that will close with parent
+                # Create detached process
                 process = subprocess.Popen(
                     command,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    start_new_session=True  # This prevents the process from closing with parent
                 )
                 
                 # Store process reference to ensure cleanup
                 if not hasattr(self, '_gui_processes'):
                     self._gui_processes = []
                 self._gui_processes.append(process)
+                
+                # Print output and errors
+                stdout, stderr = process.communicate()
+                if stdout:
+                    print(f"GUI Output: {stdout.decode()}")
+                if stderr:
+                    print(f"GUI Errors: {stderr.decode()}")
                 
             except Exception as e:
                 traceback.print_exc()
