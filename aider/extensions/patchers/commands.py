@@ -18,7 +18,7 @@ def apply_patch():
             try:
                 command = [
                     sys.executable,
-                    f"{os.environ.get('PATH_AIDER', '')}/aider/extensions/file_changer_gui.py",
+                    f"{os.environ.get('PATH_AIDER', '')}/aider/extensions/file_changer_gui/start_gui.py",
                 ]
             
                 # Create detached process
