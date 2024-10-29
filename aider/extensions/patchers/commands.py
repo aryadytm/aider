@@ -20,15 +20,28 @@ def apply_patch():
                     sys.executable, 
                     '-m', 
                     'aider.extensions.file_changer_gui.start_gui',
+                    '--directory',
+                    self.coder.root,
                 ]
             
-                subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=False)
+                # Create process that will close with parent
+                process = subprocess.Popen(
+                    command,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                
+                # Store process reference to ensure cleanup
+                if not hasattr(self, '_gui_processes'):
+                    self._gui_processes = []
+                self._gui_processes.append(process)
+                
             except Exception as e:
                 traceback.print_exc()
                 print(f"File GUI Error: {str(e)}")
-                pass
 
         setattr(Commands, 'cmd_filegui', cmd_filegui)
+
 
     def add_silent_commands():
         def cmd_drop_silent(self, args):
