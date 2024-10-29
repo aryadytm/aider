@@ -2,7 +2,6 @@ import subprocess
 import sys
 import traceback
 from aider.commands import Commands
-from aider.extensions.file_changer_gui.start_gui import AiderFileGUIApp
 
 def apply_patch():
     def add_cmd_helloworld():
