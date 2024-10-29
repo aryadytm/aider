@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import traceback
+import os
 from aider.commands import Commands
 from aider.extensions.file_changer_gui.start_gui import AiderFileGUIApp
 
@@ -16,16 +17,29 @@ def apply_patch():
         def cmd_filegui(self, args):
             "Start the file GUI based on the coder root path"
             try:
-                command = [sys.executable, '-c', 
-                           'from aider.extensions.file_changer_gui.start_gui import AiderFileGUIApp; '
-                           'from PyQt5.QtWidgets import QApplication; '
-                           f'app = QApplication([]); ex = AiderFileGUIApp("{self.coder.root}"); ex.show(); app.exec_()']
+                command = [
+                    sys.executable, 
+                    '-m', 
+                    'aider.extensions.file_changer_gui.start_gui',
+                    '--directory',
+                    self.coder.root,
+                ]
             
-                subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=False)
+                # Create process that will close with parent
+                process = subprocess.Popen(
+                    command,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                
+                # Store process reference to ensure cleanup
+                if not hasattr(self, '_gui_processes'):
+                    self._gui_processes = []
+                self._gui_processes.append(process)
+                
             except Exception as e:
                 traceback.print_exc()
                 print(f"File GUI Error: {str(e)}")
-                pass
 
         setattr(Commands, 'cmd_filegui', cmd_filegui)
 
