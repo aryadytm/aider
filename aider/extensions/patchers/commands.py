@@ -34,12 +34,17 @@ def apply_patch():
                     self._gui_processes = []
                 self._gui_processes.append(process)
                 
-                # Print output and errors
-                stdout, stderr = process.communicate()
-                if stdout:
-                    print(f"GUI Output: {stdout.decode()}")
-                if stderr:
-                    print(f"GUI Errors: {stderr.decode()}")
+                # Start a thread to handle output asynchronously
+                def handle_output():
+                    stdout, stderr = process.communicate()
+                    if stdout:
+                        print(f"GUI Output: {stdout.decode()}")
+                    if stderr:
+                        print(f"GUI Errors: {stderr.decode()}")
+                
+                import threading
+                output_thread = threading.Thread(target=handle_output, daemon=True)
+                output_thread.start()
                 
             except Exception as e:
                 traceback.print_exc()
