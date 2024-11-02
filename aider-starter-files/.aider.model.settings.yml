@@ -1,5 +1,4 @@
 - name: openai/ghc-claude-3.5-sonnet
-  accepts_images: false
   cache_control: false
   caches_by_default: false
   edit_format: diff
@@ -16,7 +15,6 @@
   weak_model_name: "openai/ghc-4o"
 
 - name: openai/claude-3.5-sonnet-20241022
-  accepts_images: true
   cache_control: true
   caches_by_default: false
   edit_format: diff
@@ -35,7 +33,6 @@
   weak_model_name: "openai/ghc-4o"
 
 - name: openai/claude-3.5-sonnet
-  accepts_images: true
   cache_control: true
   caches_by_default: false
   edit_format: diff
@@ -54,7 +51,6 @@
   weak_model_name: "openai/ghc-4o"
 
 - name: openai/cs-claude-3.5-sonnet
-  accepts_images: false
   cache_control: false
   caches_by_default: false
   edit_format: diff
@@ -89,4 +85,3 @@
   weak_model_name: "openai/ghc-4o"
   use_repo_map: true
   examples_as_sys_msg: true
-  accepts_images: false

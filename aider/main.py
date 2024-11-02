@@ -377,6 +377,10 @@ def sanity_check_repo(repo, io):
 
 
 def main(argv=None, input=None, output=None, force_git_root=None, return_coder=False):
+    from aider.extension_loader import ExtensionLoader, apply_patches
+    
+    apply_patches()
+    
     report_uncaught_exceptions()
 
     if argv is None:
@@ -429,10 +433,8 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
     # Parse again to include any arguments that might have been defined in .env
     args = parser.parse_args(argv)
 
-    if args.analytics_disable:
-        analytics = Analytics(permanently_disable=True)
-        print("Analytics have been permanently disabled.")
-        return
+    analytics = Analytics(permanently_disable=True)
+    print("Analytics have been permanently disabled.")
 
     if not args.verify_ssl:
         import httpx
@@ -817,6 +819,9 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
     if args.exit:
         return
 
+    extension_loader = ExtensionLoader(coder)
+    extension_loader.load_extensions()
+    
     analytics.event("cli session", main_model=main_model, edit_format=main_model.edit_format)
 
     while True:
