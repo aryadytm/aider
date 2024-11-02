@@ -1,7 +1,7 @@
 ---
 title: Release history
 parent: More info
-nav_order: 999
+nav_order: 900
 highlight_image: /assets/blame.jpg
 description: Release notes and stats on aider writing its own code.
 ---
@@ -19,7 +19,32 @@ cog.out(text)
 
 
 
-### v0.60.0
+### Aider v0.61.0
+
+- Load and save aider slash-commands to files:
+  - `/save <fname>` command will make a file of `/add` and `/read-only` commands that recreate the current file context in the chat.
+  - `/load <fname>` will replay the commands in the file.
+  - You can use `/load` to run any arbitrary set of slash-commands, not just `/add` and `/read-only`.
+  - Use `--load <fname>` to run a list of commands on launch, before the interactive chat begins.
+- Anonymous, opt-in [analytics](https://aider.chat/docs/more/analytics.html) with no personal data sharing.
+- Aider follows litellm's `supports_vision` attribute to enable image support for models.
+- Bugfix for when diff mode flexibly handles the model using the wrong filename.
+- Displays filenames in sorted order for `/add` and `/read-only`.
+- New `--no-fancy-input` switch disables prompt toolkit input, now still available with `--no-pretty`.
+- Override browser config with `--no-browser` or `--no-gui`.
+- Offer to open documentation URLs when errors occur.
+- Properly support all o1 models, regardless of provider.
+- Improved layout of filenames above input prompt.
+- Better handle corrupted repomap tags cache.
+- Improved handling of API errors, especially when accessing the weak model.
+- Aider wrote 68% of the code in this release.
+
+### Aider v0.60.1
+
+- Enable image support for Sonnet 10/22.
+- Display filenames in sorted order.
+
+### Aider v0.60.0
 
 - Full support for Sonnet 10/22, the new SOTA model on aider's code editing benchmark.
   - Aider uses Sonnet 10/22 by default.
@@ -33,12 +58,12 @@ cog.out(text)
 - Bugfix to properly include URLs in `/help` RAG results.
 - Aider wrote 49% of the code in this release.
 
-### v0.59.1
+### Aider v0.59.1
 
 - Check for obsolete `yes: true` in yaml config, show helpful error.
 - Model settings for openrouter/anthropic/claude-3.5-sonnet:beta
 
-### v0.59.0
+### Aider v0.59.0
 
 - Improvements to `/read-only`:
   - Now supports shell-style auto-complete of the full file system.

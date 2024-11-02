@@ -223,6 +223,7 @@ class Commands:
 
     def run(self, inp):
         if inp.startswith("!"):
+            self.coder.event("command_run")
             return self.do_run("run", inp[1:])
 
         res = self.matching_commands(inp)
@@ -230,9 +231,13 @@ class Commands:
             return
         matching_commands, first_word, rest_inp = res
         if len(matching_commands) == 1:
-            return self.do_run(matching_commands[0][1:], rest_inp)
+            command = matching_commands[0][1:]
+            self.coder.event(f"command_{command}")
+            return self.do_run(command, rest_inp)
         elif first_word in matching_commands:
-            return self.do_run(first_word[1:], rest_inp)
+            command = first_word[1:]
+            self.coder.event(f"command_{command}")
+            return self.do_run(command, rest_inp)
         elif len(matching_commands) > 1:
             self.io.tool_error(f"Ambiguous command: {', '.join(matching_commands)}")
         else:
@@ -724,7 +729,7 @@ class Commands:
                 except OSError as e:
                     self.io.tool_error(f"Error creating file {fname}: {e}")
 
-        for matched_file in all_matched_files:
+        for matched_file in sorted(all_matched_files):
             abs_file_path = self.coder.abs_root_path(matched_file)
 
             if not abs_file_path.startswith(self.coder.root) and not is_image_file(matched_file):
@@ -748,7 +753,9 @@ class Commands:
                         f"Cannot add {matched_file} as it's not part of the repository"
                     )
             else:
-                if is_image_file(matched_file) and not self.coder.main_model.accepts_images:
+                if is_image_file(matched_file) and not self.coder.main_model.info.get(
+                    "supports_vision"
+                ):
                     self.io.tool_error(
                         f"Cannot add image file {matched_file} as the"
                         f" {self.coder.main_model.name} does not support images."
@@ -961,6 +968,7 @@ class Commands:
             self.basic_help()
             return
 
+        self.coder.event("interactive help")
         from aider.coders import Coder
 
         if not self.help:
@@ -1163,25 +1171,41 @@ class Commands:
             return
 
         filenames = parse_quoted_filenames(args)
+        all_paths = []
+
+        # First collect all expanded paths
         for pattern in filenames:
-            # Expand tilde for home directory
             expanded_pattern = expanduser(pattern)
+            if os.path.isabs(expanded_pattern):
+                # For absolute paths, glob it
+                matches = list(glob.glob(expanded_pattern))
+            else:
+                # For relative paths and globs, use glob from the root directory
+                matches = list(Path(self.coder.root).glob(expanded_pattern))
 
-            expanded_paths = glob.glob(expanded_pattern, recursive=True)
-            if not expanded_paths:
+            if not matches:
                 self.io.tool_error(f"No matches found for: {pattern}")
-                continue
+            else:
+                all_paths.extend(matches)
 
-            for path in expanded_paths:
-                abs_path = self.coder.abs_root_path(path)
-                if os.path.isfile(abs_path):
-                    self._add_read_only_file(abs_path, path)
-                elif os.path.isdir(abs_path):
-                    self._add_read_only_directory(abs_path, path)
-                else:
-                    self.io.tool_error(f"Not a file or directory: {abs_path}")
+        # Then process them in sorted order
+        for path in sorted(all_paths):
+            abs_path = self.coder.abs_root_path(path)
+            if os.path.isfile(abs_path):
+                self._add_read_only_file(abs_path, path)
+            elif os.path.isdir(abs_path):
+                self._add_read_only_directory(abs_path, path)
+            else:
+                self.io.tool_error(f"Not a file or directory: {abs_path}")
 
     def _add_read_only_file(self, abs_path, original_name):
+        if is_image_file(original_name) and not self.coder.main_model.info.get("supports_vision"):
+            self.io.tool_error(
+                f"Cannot add image file {original_name} as the"
+                f" {self.coder.main_model.name} does not support images."
+            )
+            return
+
         if abs_path in self.coder.abs_read_only_fnames:
             self.io.tool_error(f"{original_name} is already in the chat as a read-only file")
             return
@@ -1234,6 +1258,63 @@ class Commands:
         announcements = "\n".join(self.coder.get_announcements())
         output = f"{announcements}\n{settings}"
         self.io.tool_output(output)
+
+    def completions_raw_load(self, document, complete_event):
+        return self.completions_raw_read_only(document, complete_event)
+
+    def cmd_load(self, args):
+        "Load and execute commands from a file"
+        if not args.strip():
+            self.io.tool_error("Please provide a filename containing commands to load.")
+            return
+
+        try:
+            with open(args.strip(), "r", encoding=self.io.encoding, errors="replace") as f:
+                commands = f.readlines()
+        except FileNotFoundError:
+            self.io.tool_error(f"File not found: {args}")
+            return
+        except Exception as e:
+            self.io.tool_error(f"Error reading file: {e}")
+            return
+
+        for cmd in commands:
+            cmd = cmd.strip()
+            if not cmd or cmd.startswith("#"):
+                continue
+
+            self.io.tool_output(f"\nExecuting: {cmd}")
+            self.run(cmd)
+
+    def completions_raw_save(self, document, complete_event):
+        return self.completions_raw_read_only(document, complete_event)
+
+    def cmd_save(self, args):
+        "Save commands to a file that can reconstruct the current chat session's files"
+        if not args.strip():
+            self.io.tool_error("Please provide a filename to save the commands to.")
+            return
+
+        try:
+            with open(args.strip(), "w", encoding=self.io.encoding) as f:
+                f.write("/drop\n")
+                # Write commands to add editable files
+                for fname in sorted(self.coder.abs_fnames):
+                    rel_fname = self.coder.get_rel_fname(fname)
+                    f.write(f"/add       {rel_fname}\n")
+
+                # Write commands to add read-only files
+                for fname in sorted(self.coder.abs_read_only_fnames):
+                    # Use absolute path for files outside repo root, relative path for files inside
+                    if Path(fname).is_relative_to(self.coder.root):
+                        rel_fname = self.coder.get_rel_fname(fname)
+                        f.write(f"/read-only {rel_fname}\n")
+                    else:
+                        f.write(f"/read-only {fname}\n")
+
+            self.io.tool_output(f"Saved commands to {args.strip()}")
+        except Exception as e:
+            self.io.tool_error(f"Error saving commands to file: {e}")
 
     def cmd_copy(self, args):
         "Copy the last assistant message to the clipboard"

@@ -1,5 +1,6 @@
 import codecs
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -33,7 +34,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add(self):
         # Initialize the Commands and InputOutput objects
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -48,7 +49,7 @@ class TestCommands(TestCase):
 
     def test_cmd_copy(self):
         # Initialize InputOutput and Coder instances
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         coder = Coder.create(self.GPT35, None, io)
         commands = Commands(io, coder)
 
@@ -78,7 +79,7 @@ class TestCommands(TestCase):
 
     def test_cmd_copy_with_cur_messages(self):
         # Initialize InputOutput and Coder instances
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         coder = Coder.create(self.GPT35, None, io)
         commands = Commands(io, coder)
 
@@ -108,7 +109,7 @@ class TestCommands(TestCase):
                 " cur_messages"
             )
             mock_tool_output.assert_any_call(expected_preview)
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         coder = Coder.create(self.GPT35, None, io)
         commands = Commands(io, coder)
 
@@ -124,7 +125,7 @@ class TestCommands(TestCase):
             mock_tool_error.assert_called_once_with("No assistant messages found to copy.")
 
     def test_cmd_copy_pyperclip_exception(self):
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         coder = Coder.create(self.GPT35, None, io)
         commands = Commands(io, coder)
 
@@ -147,7 +148,7 @@ class TestCommands(TestCase):
     def test_cmd_add_bad_glob(self):
         # https://github.com/Aider-AI/aider/issues/293
 
-        io = InputOutput(pretty=False, yes=False)
+        io = InputOutput(pretty=False, fancy_input=False, yes=False)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -157,7 +158,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_with_glob_patterns(self):
         # Initialize the Commands and InputOutput objects
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -183,7 +184,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_no_match(self):
         # yes=False means we will *not* create the file when it is not found
-        io = InputOutput(pretty=False, yes=False)
+        io = InputOutput(pretty=False, fancy_input=False, yes=False)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -197,7 +198,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_no_match_but_make_it(self):
         # yes=True means we *will* create the file when it is not found
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -214,7 +215,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_drop_directory(self):
         # Initialize the Commands and InputOutput objects
-        io = InputOutput(pretty=False, yes=False)
+        io = InputOutput(pretty=False, fancy_input=False, yes=False)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -265,7 +266,7 @@ class TestCommands(TestCase):
 
     def test_cmd_drop_with_glob_patterns(self):
         # Initialize the Commands and InputOutput objects
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -292,7 +293,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_bad_encoding(self):
         # Initialize the Commands and InputOutput objects
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -308,7 +309,7 @@ class TestCommands(TestCase):
 
     def test_cmd_git(self):
         # Initialize the Commands and InputOutput objects
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
 
         with GitTemporaryDirectory() as tempdir:
             # Create a file in the temporary directory
@@ -329,7 +330,7 @@ class TestCommands(TestCase):
 
     def test_cmd_tokens(self):
         # Initialize the Commands and InputOutput objects
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
 
         coder = Coder.create(self.GPT35, None, io)
         commands = Commands(io, coder)
@@ -371,7 +372,7 @@ class TestCommands(TestCase):
 
         os.chdir("subdir")
 
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         coder = Coder.create(self.GPT35, None, io)
         commands = Commands(io, coder)
 
@@ -387,7 +388,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_from_subdir_again(self):
         with GitTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -413,7 +414,7 @@ class TestCommands(TestCase):
             repo.git.add(fname)
             repo.git.commit("-m", "initial")
 
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -432,7 +433,7 @@ class TestCommands(TestCase):
             root.mkdir()
             os.chdir(str(root))
 
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -455,7 +456,7 @@ class TestCommands(TestCase):
 
             make_repo()
 
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -473,7 +474,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_filename_with_special_chars(self):
         with ChdirTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -498,7 +499,7 @@ class TestCommands(TestCase):
             repo.git.add(A=True)
             repo.git.commit("-m", "Initial commit")
 
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(Model("claude-3-5-sonnet-20240620"), None, io)
@@ -538,7 +539,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_dirname_with_special_chars(self):
         with ChdirTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -556,7 +557,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_dirname_with_special_chars_git(self):
         with GitTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -578,7 +579,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_abs_filename(self):
         with ChdirTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -593,7 +594,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_quoted_filename(self):
         with ChdirTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -621,7 +622,7 @@ class TestCommands(TestCase):
             # leave a dirty `git rm`
             repo.git.rm("one.txt")
 
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -642,9 +643,269 @@ class TestCommands(TestCase):
             del commands
             del repo
 
+    def test_cmd_save_and_load(self):
+        with GitTemporaryDirectory() as repo_dir:
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
+            coder = Coder.create(self.GPT35, None, io)
+            commands = Commands(io, coder)
+
+            # Create some test files
+            test_files = {
+                "file1.txt": "Content of file 1",
+                "file2.py": "print('Content of file 2')",
+                "subdir/file3.md": "# Content of file 3",
+            }
+
+            for file_path, content in test_files.items():
+                full_path = Path(repo_dir) / file_path
+                full_path.parent.mkdir(parents=True, exist_ok=True)
+                full_path.write_text(content)
+
+            # Add some files as editable and some as read-only
+            commands.cmd_add("file1.txt file2.py")
+            commands.cmd_read_only("subdir/file3.md")
+
+            # Save the session to a file
+            session_file = "test_session.txt"
+            commands.cmd_save(session_file)
+
+            # Verify the session file was created and contains the expected commands
+            self.assertTrue(Path(session_file).exists())
+            with open(session_file, encoding=io.encoding) as f:
+                commands_text = f.read().splitlines()
+
+                # Convert paths to absolute for comparison
+                abs_file1 = str(Path("file1.txt").resolve())
+                abs_file2 = str(Path("file2.py").resolve())
+                abs_file3 = str(Path("subdir/file3.md").resolve())
+
+                # Check each line for matching paths using os.path.samefile
+                found_file1 = found_file2 = found_file3 = False
+                for line in commands_text:
+                    if line.startswith("/add "):
+                        path = Path(line[5:].strip()).resolve()
+                        if os.path.samefile(str(path), abs_file1):
+                            found_file1 = True
+                        elif os.path.samefile(str(path), abs_file2):
+                            found_file2 = True
+                    elif line.startswith("/read-only "):
+                        path = Path(line[11:]).resolve()
+                        if os.path.samefile(str(path), abs_file3):
+                            found_file3 = True
+
+                self.assertTrue(found_file1, "file1.txt not found in commands")
+                self.assertTrue(found_file2, "file2.py not found in commands")
+                self.assertTrue(found_file3, "file3.md not found in commands")
+
+            # Clear the current session
+            commands.cmd_reset("")
+            self.assertEqual(len(coder.abs_fnames), 0)
+            self.assertEqual(len(coder.abs_read_only_fnames), 0)
+
+            # Load the session back
+            commands.cmd_load(session_file)
+
+            # Verify files were restored correctly
+            added_files = {Path(coder.get_rel_fname(f)).as_posix() for f in coder.abs_fnames}
+            read_only_files = {
+                Path(coder.get_rel_fname(f)).as_posix() for f in coder.abs_read_only_fnames
+            }
+
+            self.assertEqual(added_files, {"file1.txt", "file2.py"})
+            self.assertEqual(read_only_files, {"subdir/file3.md"})
+
+            # Clean up
+            Path(session_file).unlink()
+
+    def test_cmd_save_and_load_with_external_file(self):
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as external_file:
+            external_file.write("External file content")
+            external_file_path = external_file.name
+
+        try:
+            with GitTemporaryDirectory() as repo_dir:
+                io = InputOutput(pretty=False, fancy_input=False, yes=True)
+                coder = Coder.create(self.GPT35, None, io)
+                commands = Commands(io, coder)
+
+                # Create some test files in the repo
+                test_files = {
+                    "file1.txt": "Content of file 1",
+                    "file2.py": "print('Content of file 2')",
+                }
+
+                for file_path, content in test_files.items():
+                    full_path = Path(repo_dir) / file_path
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    full_path.write_text(content)
+
+                # Add some files as editable and some as read-only
+                commands.cmd_add(str(Path("file1.txt")))
+                commands.cmd_read_only(external_file_path)
+
+                # Save the session to a file
+                session_file = str(Path("test_session.txt"))
+                commands.cmd_save(session_file)
+
+                # Verify the session file was created and contains the expected commands
+                self.assertTrue(Path(session_file).exists())
+                with open(session_file, encoding=io.encoding) as f:
+                    commands_text = f.read()
+                    commands_text = re.sub(
+                        r"/add +", "/add ", commands_text
+                    )  # Normalize add command spaces
+                    self.assertIn("/add file1.txt", commands_text)
+                    # Split commands and check each one
+                    for line in commands_text.splitlines():
+                        if line.startswith("/read-only "):
+                            saved_path = line.split(" ", 1)[1]
+                            if os.path.samefile(saved_path, external_file_path):
+                                break
+                    else:
+                        self.fail(f"No matching read-only command found for {external_file_path}")
+
+                # Clear the current session
+                commands.cmd_reset("")
+                self.assertEqual(len(coder.abs_fnames), 0)
+                self.assertEqual(len(coder.abs_read_only_fnames), 0)
+
+                # Load the session back
+                commands.cmd_load(session_file)
+
+                # Verify files were restored correctly
+                added_files = {coder.get_rel_fname(f) for f in coder.abs_fnames}
+                read_only_files = {coder.get_rel_fname(f) for f in coder.abs_read_only_fnames}
+
+                self.assertEqual(added_files, {str(Path("file1.txt"))})
+                self.assertTrue(
+                    any(os.path.samefile(external_file_path, f) for f in read_only_files)
+                )
+
+                # Clean up
+                Path(session_file).unlink()
+
+        finally:
+            os.unlink(external_file_path)
+
+    def test_cmd_save_and_load_with_multiple_external_files(self):
+        with (
+            tempfile.NamedTemporaryFile(mode="w", delete=False) as external_file1,
+            tempfile.NamedTemporaryFile(mode="w", delete=False) as external_file2,
+        ):
+            external_file1.write("External file 1 content")
+            external_file2.write("External file 2 content")
+            external_file1_path = external_file1.name
+            external_file2_path = external_file2.name
+
+        try:
+            with GitTemporaryDirectory() as repo_dir:
+                io = InputOutput(pretty=False, fancy_input=False, yes=True)
+                coder = Coder.create(self.GPT35, None, io)
+                commands = Commands(io, coder)
+
+                # Create some test files in the repo
+                test_files = {
+                    "internal1.txt": "Content of internal file 1",
+                    "internal2.txt": "Content of internal file 2",
+                }
+
+                for file_path, content in test_files.items():
+                    full_path = Path(repo_dir) / file_path
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    full_path.write_text(content)
+
+                # Add files as editable and read-only
+                commands.cmd_add(str(Path("internal1.txt")))
+                commands.cmd_read_only(external_file1_path)
+                commands.cmd_read_only(external_file2_path)
+
+                # Save the session to a file
+                session_file = str(Path("test_session.txt"))
+                commands.cmd_save(session_file)
+
+                # Verify the session file was created and contains the expected commands
+                self.assertTrue(Path(session_file).exists())
+                with open(session_file, encoding=io.encoding) as f:
+                    commands_text = f.read()
+                    commands_text = re.sub(
+                        r"/add +", "/add ", commands_text
+                    )  # Normalize add command spaces
+                    self.assertIn("/add internal1.txt", commands_text)
+                    # Split commands and check each one
+                    for line in commands_text.splitlines():
+                        if line.startswith("/read-only "):
+                            saved_path = line.split(" ", 1)[1]
+                            if os.path.samefile(saved_path, external_file1_path):
+                                break
+                    else:
+                        self.fail(f"No matching read-only command found for {external_file1_path}")
+                    # Split commands and check each one
+                    for line in commands_text.splitlines():
+                        if line.startswith("/read-only "):
+                            saved_path = line.split(" ", 1)[1]
+                            if os.path.samefile(saved_path, external_file2_path):
+                                break
+                    else:
+                        self.fail(f"No matching read-only command found for {external_file2_path}")
+
+                # Clear the current session
+                commands.cmd_reset("")
+                self.assertEqual(len(coder.abs_fnames), 0)
+                self.assertEqual(len(coder.abs_read_only_fnames), 0)
+
+                # Load the session back
+                commands.cmd_load(session_file)
+
+                # Verify files were restored correctly
+                added_files = {coder.get_rel_fname(f) for f in coder.abs_fnames}
+                read_only_files = {coder.get_rel_fname(f) for f in coder.abs_read_only_fnames}
+
+                self.assertEqual(added_files, {str(Path("internal1.txt"))})
+                self.assertTrue(
+                    all(
+                        any(os.path.samefile(external_path, fname) for fname in read_only_files)
+                        for external_path in [external_file1_path, external_file2_path]
+                    )
+                )
+
+                # Clean up
+                Path(session_file).unlink()
+
+        finally:
+            os.unlink(external_file1_path)
+            os.unlink(external_file2_path)
+
+    def test_cmd_read_only_with_image_file(self):
+        with GitTemporaryDirectory() as repo_dir:
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
+            coder = Coder.create(self.GPT35, None, io)
+            commands = Commands(io, coder)
+
+            # Create a test image file
+            test_file = Path(repo_dir) / "test_image.jpg"
+            test_file.write_text("Mock image content")
+
+            # Test with non-vision model
+            commands.cmd_read_only(str(test_file))
+            self.assertEqual(len(coder.abs_read_only_fnames), 0)
+
+            # Test with vision model
+            vision_model = Model("gpt-4-vision-preview")
+            vision_coder = Coder.create(vision_model, None, io)
+            vision_commands = Commands(io, vision_coder)
+
+            vision_commands.cmd_read_only(str(test_file))
+            self.assertEqual(len(vision_coder.abs_read_only_fnames), 1)
+            self.assertTrue(
+                any(
+                    os.path.samefile(str(test_file), fname)
+                    for fname in vision_coder.abs_read_only_fnames
+                )
+            )
+
     def test_cmd_read_only_with_glob_pattern(self):
         with GitTemporaryDirectory() as repo_dir:
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -679,7 +940,7 @@ class TestCommands(TestCase):
 
     def test_cmd_read_only_with_recursive_glob(self):
         with GitTemporaryDirectory() as repo_dir:
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -706,7 +967,7 @@ class TestCommands(TestCase):
 
     def test_cmd_read_only_with_nonexistent_glob(self):
         with GitTemporaryDirectory() as repo_dir:
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -724,7 +985,7 @@ class TestCommands(TestCase):
 
     def test_cmd_add_unicode_error(self):
         # Initialize the Commands and InputOutput objects
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         from aider.coders import Coder
 
         coder = Coder.create(self.GPT35, None, io)
@@ -742,7 +1003,7 @@ class TestCommands(TestCase):
     def test_cmd_add_read_only_file(self):
         with GitTemporaryDirectory():
             # Initialize the Commands and InputOutput objects
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -797,7 +1058,7 @@ class TestCommands(TestCase):
 
     def test_cmd_test_unbound_local_error(self):
         with ChdirTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -814,7 +1075,7 @@ class TestCommands(TestCase):
         with GitTemporaryDirectory():
             repo = git.Repo()
 
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             from aider.coders import Coder
 
             coder = Coder.create(self.GPT35, None, io)
@@ -839,7 +1100,7 @@ class TestCommands(TestCase):
     def test_cmd_undo_with_dirty_files_not_in_last_commit(self):
         with GitTemporaryDirectory() as repo_dir:
             repo = git.Repo(repo_dir)
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -887,7 +1148,7 @@ class TestCommands(TestCase):
     def test_cmd_undo_with_newly_committed_file(self):
         with GitTemporaryDirectory() as repo_dir:
             repo = git.Repo(repo_dir)
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -923,7 +1184,7 @@ class TestCommands(TestCase):
     def test_cmd_undo_on_first_commit(self):
         with GitTemporaryDirectory() as repo_dir:
             repo = git.Repo(repo_dir)
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -991,7 +1252,7 @@ class TestCommands(TestCase):
 
     def test_cmd_read_only(self):
         with GitTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -1021,14 +1282,54 @@ class TestCommands(TestCase):
                 )
             )
 
+    def test_cmd_read_only_from_working_dir(self):
+        with GitTemporaryDirectory() as repo_dir:
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
+            coder = Coder.create(self.GPT35, None, io)
+            commands = Commands(io, coder)
+
+            # Create a subdirectory and a test file within it
+            subdir = Path(repo_dir) / "subdir"
+            subdir.mkdir()
+            test_file = subdir / "test_read_only_file.txt"
+            test_file.write_text("Test content")
+
+            # Change the current working directory to the subdirectory
+            os.chdir(subdir)
+
+            # Test the /read-only command using git_root referenced name
+            commands.cmd_read_only(os.path.join("subdir", "test_read_only_file.txt"))
+
+            # Check if the file was added to abs_read_only_fnames
+            self.assertTrue(
+                any(
+                    os.path.samefile(str(test_file.resolve()), fname)
+                    for fname in coder.abs_read_only_fnames
+                )
+            )
+
+            # Test dropping the read-only file using git_root referenced name
+            commands.cmd_drop(os.path.join("subdir", "test_read_only_file.txt"))
+
+            # Check if the file was removed from abs_read_only_fnames
+            self.assertFalse(
+                any(
+                    os.path.samefile(str(test_file.resolve()), fname)
+                    for fname in coder.abs_read_only_fnames
+                )
+            )
+
     def test_cmd_read_only_with_external_file(self):
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as external_file:
             external_file.write("External file content")
             external_file_path = external_file.name
 
         try:
-            with GitTemporaryDirectory():
-                io = InputOutput(pretty=False, yes=False)
+            with GitTemporaryDirectory() as repo_dir:
+                # Create a test file in the repo
+                repo_file = Path(repo_dir) / "repo_file.txt"
+                repo_file.write_text("Repo file content")
+                io = InputOutput(pretty=False, fancy_input=False, yes=False)
                 coder = Coder.create(self.GPT35, None, io)
                 commands = Commands(io, coder)
 
@@ -1059,7 +1360,7 @@ class TestCommands(TestCase):
 
     def test_cmd_read_only_with_multiple_files(self):
         with GitTemporaryDirectory() as repo_dir:
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -1090,7 +1391,7 @@ class TestCommands(TestCase):
 
     def test_cmd_read_only_with_tilde_path(self):
         with GitTemporaryDirectory():
-            io = InputOutput(pretty=False, yes=False)
+            io = InputOutput(pretty=False, fancy_input=False, yes=False)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -1125,7 +1426,7 @@ class TestCommands(TestCase):
     def test_cmd_diff(self):
         with GitTemporaryDirectory() as repo_dir:
             repo = git.Repo(repo_dir)
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -1189,7 +1490,7 @@ class TestCommands(TestCase):
                 self.assertIn("+Final modified content", diff_output)
 
     def test_cmd_ask(self):
-        io = InputOutput(pretty=False, yes=True)
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
         coder = Coder.create(self.GPT35, None, io)
         commands = Commands(io, coder)
 
@@ -1208,7 +1509,7 @@ class TestCommands(TestCase):
     def test_cmd_lint_with_dirty_file(self):
         with GitTemporaryDirectory() as repo_dir:
             repo = git.Repo(repo_dir)
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 
@@ -1245,7 +1546,7 @@ class TestCommands(TestCase):
 
     def test_cmd_reset(self):
         with GitTemporaryDirectory() as repo_dir:
-            io = InputOutput(pretty=False, yes=True)
+            io = InputOutput(pretty=False, fancy_input=False, yes=True)
             coder = Coder.create(self.GPT35, None, io)
             commands = Commands(io, coder)
 

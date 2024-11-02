@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import traceback
+import os
 from aider.commands import Commands
 
 def apply_patch():
