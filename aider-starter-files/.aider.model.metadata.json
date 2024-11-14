@@ -59,7 +59,7 @@
         "supports_parallel_function_calling": false,
         "supports_vision": false
     },
-    "openai/freemini-gemini-1.5-flash": {
+    "openai/freemini-gemini-1.5-flash-002": {
         "max_tokens": 4096,
         "max_input_tokens": 1024024,
         "max_output_tokens": 4096,

@@ -12,7 +12,7 @@
   use_repo_map: true
   use_system_prompt: true
   use_temperature: true
-  weak_model_name: "openai/ghc-4o"
+  weak_model_name: openai/freemini-gemini-1.5-flash-002
 
 - name: openai/claude-3.5-sonnet-20241022
   cache_control: true
@@ -30,7 +30,7 @@
   use_repo_map: true
   use_system_prompt: true
   use_temperature: true
-  weak_model_name: "openai/ghc-4o"
+  weak_model_name: openai/freemini-gemini-1.5-flash-002
 
 - name: openai/claude-3.5-sonnet
   cache_control: true
@@ -48,7 +48,7 @@
   use_repo_map: true
   use_system_prompt: true
   use_temperature: true
-  weak_model_name: "openai/ghc-4o"
+  weak_model_name: openai/freemini-gemini-1.5-flash-002
 
 - name: openai/cs-claude-3.5-sonnet
   cache_control: false
@@ -64,7 +64,7 @@
   use_repo_map: true
   use_system_prompt: true
   use_temperature: false
-  weak_model_name: "openai/ghc-4o"
+  weak_model_name: openai/freemini-gemini-1.5-flash-002
 
 - name: openai/ghc-4o
   cache_control: false
@@ -82,6 +82,26 @@
   use_system_prompt: true
   use_temperature: true
   edit_format: "diff"
-  weak_model_name: "openai/ghc-4o"
+  weak_model_name: openai/freemini-gemini-1.5-flash-002
+  use_repo_map: true
+  examples_as_sys_msg: true
+
+- name: openai/freemini-gemini-1.5-flash-002
+  cache_control: false
+  caches_by_default: false
+  edit_format: diff
+  editor_edit_format: editor-diff
+  editor_model_name: openai/freemini-gemini-1.5-flash-002
+  examples_as_sys_msg: false
+  extra_params: null
+  lazy: true
+  reminder: sys
+  send_undo_reply: false
+  streaming: true
+  use_repo_map: true
+  use_system_prompt: true
+  use_temperature: true
+  edit_format: "diff"
+  weak_model_name: openai/freemini-gemini-1.5-flash-002
   use_repo_map: true
   examples_as_sys_msg: true

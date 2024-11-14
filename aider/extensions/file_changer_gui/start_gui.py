@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (
     QShortcut,
     QMenu,
     QSplitter,
+    QStatusBar,
 )
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QKeySequence, QFont
 from PyQt5.QtCore import Qt, QModelIndex, QTimer, QSortFilterProxyModel
@@ -85,6 +86,9 @@ class AiderFileGUIApp(QMainWindow):
         self.preset_readonly_expansion_states: Dict[str, bool] = {}  # Added
 
         self.preset_file_path = os.path.join(self.working_directory, PATH_PRESET_JSON)
+
+        # Add status bar
+        self.statusBar().setStyleSheet("QStatusBar { color: white; }")
 
         self.setup_global_hotkey()
         self.init_ui()
@@ -418,7 +422,42 @@ class AiderFileGUIApp(QMainWindow):
         return file_path.suffix[1:] in formats
 
     def is_valid_directory(self, dir_path: Path) -> bool:
-        return dir_path.name != "__pycache__" and not dir_path.name.startswith(".")
+        excluded_dirs = {
+            # Build and dependency directories
+            "__pycache__",
+            ".git",
+            "node_modules",
+            "venv",
+            ".venv",
+            "env",
+            "virtualenv",
+            
+            # Build output directories
+            "dist",
+            "build",
+            
+            # Media and asset directories
+            "media",
+            "uploads",
+            "assets",
+            "videos",
+            "images",
+            
+            # Cache directories
+            ".cache",
+            ".npm",
+            ".yarn",
+            
+            # IDE directories
+            ".idea",
+            ".vscode",
+            ".vs",
+            
+            # Log directories
+            "logs",
+            "log"
+        }
+        return not (dir_path.name.startswith(".") or dir_path.name.lower() in excluded_dirs)
 
     def on_item_changed(self, item: QStandardItem):
         try:
@@ -697,6 +736,9 @@ class AiderFileGUIApp(QMainWindow):
 
         clipboard = QApplication.clipboard()
         clipboard.setText(formatted_content + "\n")
+        
+        # Show success notification in status bar
+        self.statusBar().showMessage("Content copied to clipboard successfully!", 2000)  # Message disappears after 2 seconds
 
     def show_context_menu(self, position):
         index = self.tree_view.indexAt(position)
