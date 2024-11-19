@@ -708,7 +708,31 @@ class AiderFileGUIApp(QMainWindow):
             if item.hasChildren():
                 self.set_check_state_recursive(item, state)
 
+    def generate_project_tree(self, directory: Path, prefix: str = "") -> str:
+        """Generate a tree representation of the project structure."""
+        tree = ""
+        try:
+            # Get and sort directory contents
+            contents = sorted(directory.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
+            
+            for i, path in enumerate(contents):
+                if not self.is_valid_directory(path) and path.is_dir():
+                    continue
+                    
+                is_last = i == len(contents) - 1
+                connector = "└── " if is_last else "├── "
+                tree += f"{prefix}{connector}{path.name}\n"
+                
+                if path.is_dir():
+                    next_prefix = prefix + ("    " if is_last else "│   ")
+                    tree += self.generate_project_tree(path, next_prefix)
+                    
+            return tree
+        except PermissionError:
+            return ""
+
     def copy_selected_files_to_clipboard(self):
+        fence = "`" * 3
         selected_files = list(self.readonly_files)
         selected_files += self.get_checked_files(self.model.invisibleRootItem())
 
@@ -718,17 +742,21 @@ class AiderFileGUIApp(QMainWindow):
             )
             return
 
-        formatted_content = "Working Directory: " + self.working_directory + "\n\n"
+        # Generate project tree
+        project_tree = self.generate_project_tree(Path(self.working_directory))
+        
+        formatted_content = f"Working Directory: {self.working_directory}\n\nProject Structure:\n{fence}\n{project_tree}\n{fence}\n\nFiles to Work On:\n\n"
+        
         for file_path in selected_files:
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
                     content = file.read()
                     file_format = Path(file_path).suffix[1:]
                     formatted_content += (
-                        f"{file_path}\n```{file_format}\n{content}\n```\n\n"
+                        f"{file_path}\n{fence}{file_format}\n{content}\n{fence}\n\n"
                     )
             except Exception as e:
-                traceback.print_exc()  # Print full traceback to the console
+                traceback.print_exc()
                 QMessageBox.warning(
                     self, "Error", f"Error reading file {file_path}: {str(e)}"
                 )
@@ -737,8 +765,7 @@ class AiderFileGUIApp(QMainWindow):
         clipboard = QApplication.clipboard()
         clipboard.setText(formatted_content + "\n")
         
-        # Show success notification in status bar
-        self.statusBar().showMessage("Content copied to clipboard successfully!", 2000)  # Message disappears after 2 seconds
+        self.statusBar().showMessage("Content copied to clipboard successfully!", 2000)
 
     def show_context_menu(self, position):
         index = self.tree_view.indexAt(position)
